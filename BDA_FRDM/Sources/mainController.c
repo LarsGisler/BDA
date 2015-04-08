@@ -58,6 +58,7 @@ void mainController_run(void) {
 	int valueToSend = 48;
 
 	for (;;) {
+		// Test Test
 		KEY_Scan();
 		EventHandler_HandleEvent();
 
