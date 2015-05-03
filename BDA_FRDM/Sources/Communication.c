@@ -10,33 +10,53 @@
 #include "Measure.h"
 #include "Communication.h"
 #include "USB1.h"
+#include "Trigger.h"
+#include "Led.h"
 
 
-extern uint16_t measured_data[];
 
-uint8_t raw_header[BUFFER_SIZE];
+extern uint16_t sensor_data_ready[];
 
-void readCommand(){
-	CDC1_GetChar(&raw_header[0]);
-	CDC1_GetChar(&raw_header[1]);
+uint8_t header_buffer[BUFFER_SIZE];
+
+
+void COM_readCommand(){
+	CDC1_GetChar(&header_buffer[0]);
+	CDC1_GetChar(&header_buffer[1]);
+
+	header.command = (header_buffer[0] & COMMAND_MASK);
+	header.acknowledge_on = (header_buffer[1] & SERVICE_MASK)>>3;
+	header.repeat_cnt = (header_buffer[1] & REPEAT_MASK)>>4;
+
 }
 
-void extractHeader(){
-	header.command = (raw_header[0] & COMMAND_MASK);
-	header.acknowledge_on = (raw_header[1] & SERVICE_MASK)>>3;
-	header.repeat_cnt = (raw_header[1] & REPEAT_MASK)>>4;
+
+
+void COM_extractCommandInfo(){
+	if (header.command != 0) {
+		LED3_On(); TRG_SetTrigger(TRG_LED3_OFF, 100, LED3m_Off, NULL);
+		switch(header.command){
+			case SEND_DATA_COMMAND: COM_sendPixel(0);
+				break;
+			case CALIBRATE_COMMAND:
+				break;
+			default: break;
+		}
+		header.command = 0;
+		header_buffer[0] = 0;
+		header_buffer[1] = 0;
+	}
+
 }
 
-void sendData(){
-	//for(int a=0;a<sizeof(measured_data);a++){
-		CDC1_SendChar((char) measured_data[0]);
-		CDC1_SendChar((char) (measured_data[0]>>8));
-	//}
+
+void COM_sendPixel(uint8_t pix_index){
+	uint8_t byteL = sensor_data_ready[pix_index];
+	uint8_t byteH = sensor_data_ready[pix_index]>>8;
+	CDC1_SendChar((char)byteL);
+	CDC1_SendChar((char)byteH);
 }
 
-void deinitUSBcom(){
-	header.command = 0;
-	raw_header[0] = 0;
-	raw_header[1] = 0;
-}
+
+
 

@@ -12,6 +12,9 @@
 #define SERVICE_MASK 0b00001000
 #define REPEAT_MASK 0b11110000
 
+#define SEND_DATA_COMMAND 0b0011
+#define CALIBRATE_COMMAND 0b0110
+
 #define BUFFER_SIZE 2
 
 struct
@@ -20,13 +23,13 @@ struct
 	char repeat_cnt;
 } header;
 
-void readCommand(void);
+void COM_readCommand(void);
 
-void extractHeader(void);
+void COM_extractCommandInfo(void);
 
-void sendData(void);
+void COM_sendPixel(uint8_t pix_index);
 
-void deinitUSBcom(void);
+void COM_deinitUSBcom(void);
 
 
 #endif /* COMMUNICATION_H_ */

@@ -75,17 +75,8 @@ void mainController_run(void) {
 		while (CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer)) == ERR_BUSOFF) {
 			WAIT1_Waitms(10);
 		}
-		readCommand();
-		extractHeader();
-		if (header.command != 0) {
-			//CLS1_SendChar(received_char);
-			LED3_On();
-			TRG_SetTrigger(TRG_LED3_OFF, 100, LED3m_Off, NULL);
-			if(header.command == 0b0001){
-				sendData();
-			}
-			deinitUSBcom();
-
+		COM_readCommand();
+		COM_extractCommandInfo();
 
 			/*(void) CDC1_SendChar(received_char);
 			if (received_char == 's') {
@@ -125,5 +116,5 @@ void mainController_run(void) {
 //   for(;;){} /* error */
 //}
 //RTOS_Run();
-	}
+
 
