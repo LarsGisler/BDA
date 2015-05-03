@@ -27,6 +27,9 @@
 #define PL_HAS_RTOS			(0)
 #define PL_HAS_SHELL		(0)
 #define PL_HAS_SHELL_QUEUE	(0)
+#define PL_HAS_SERVICE_PROTOCOL	(1)
+#define PL_HAS_REPEAT_PROTOCOL	(1)
+
 
 #if PL_IS_FRDM
 #define PL_HAS_BLUETHOOTH	(0)

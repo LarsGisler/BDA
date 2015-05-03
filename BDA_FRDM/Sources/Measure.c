@@ -12,7 +12,7 @@
 
 
 uint16_t sensor_data[NUMBER_OF_PIXEL];
-uint16_t sensor_data_ready[NUMBER_OF_PIXEL] = {0b1000000000000001};
+uint16_t sensor_data_ready[NUMBER_OF_PIXEL];
 
 void loadDummyData(){
 	for(int a = 0; a<NUMBER_OF_PIXEL; a++){

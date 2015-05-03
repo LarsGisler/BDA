@@ -66,6 +66,7 @@ void mainController_run(void) {
 	EVNT_SetEvent(EVNT_INIT);
 	int cnt = 0;
 	int valueToSend = 48;
+	loadDummyData();
 
 
 	for (;;) {
@@ -77,23 +78,7 @@ void mainController_run(void) {
 		}
 		COM_readCommand();
 		COM_extractCommandInfo();
-
-			/*(void) CDC1_SendChar(received_char);
-			if (received_char == 's') {
-				ST_NegVal();
-			}
-			if (received_char == 'e') {
-				EN_NegVal();
-			}
-			if (received_char == 'l') {
-				LEDred_NegVal();
-			}
-			if (received_char == 'd') {
-				SHDN_NegVal();
-			}
-			received_char = 0;
-		*/
-			}
+	}
 
 		/*else {
 				WAIT1_Waitms(10);
@@ -107,10 +92,8 @@ void mainController_run(void) {
 					}
 				}
 			}*/
-			(void) AD1_Measure(TRUE);
-			(void) AD1_GetValue16(&measuredValue);
 
-		}
+}
 
 //if (FRTOS1_xTaskCreate(Main, (signed portCHAR *)"MAIN", configMINIMAL_STACK_SIZE, NULL, 1, NULL) != pdPASS) {
 //   for(;;){} /* error */
