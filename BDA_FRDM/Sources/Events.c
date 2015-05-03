@@ -31,6 +31,8 @@
 #include "Events.h"
 #include "Timer.h"
 #include "Keys.h"
+#include "Led.h"
+#include "Trigger.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,91 +55,6 @@ extern "C" {
 */
 /* ===================================================================*/
 void Cpu_OnNMIINT(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  SW7_OnInterrupt (module Events)
-**
-**     Component   :  SW7 [ExtInt]
-**     Description :
-**         This event is called when an active signal edge/level has
-**         occurred.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void SW7_OnInterrupt(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  SW4_OnInterrupt (module Events)
-**
-**     Component   :  SW4 [ExtInt]
-**     Description :
-**         This event is called when an active signal edge/level has
-**         occurred.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void SW4_OnInterrupt(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  SW3_OnInterrupt (module Events)
-**
-**     Component   :  SW3 [ExtInt]
-**     Description :
-**         This event is called when an active signal edge/level has
-**         occurred.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void SW3_OnInterrupt(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  SW2_OnInterrupt (module Events)
-**
-**     Component   :  SW2 [ExtInt]
-**     Description :
-**         This event is called when an active signal edge/level has
-**         occurred.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void SW2_OnInterrupt(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  SW1_OnInterrupt (module Events)
-**
-**     Component   :  SW1 [ExtInt]
-**     Description :
-**         This event is called when an active signal edge/level has
-**         occurred.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void SW1_OnInterrupt(void)
 {
   /* Write your code here ... */
 }
@@ -231,6 +148,82 @@ void FRTOS1_vApplicationMallocFailedHook(void)
   taskDISABLE_INTERRUPTS();
   /* Write your code here ... */
   for(;;) {}
+}
+
+/*
+** ===================================================================
+**     Event       :  AD1_OnEnd (module Events)
+**
+**     Component   :  AD1 [ADC]
+**     Description :
+**         This event is called after the measurement (which consists
+**         of <1 or more conversions>) is/are finished.
+**         The event is available only when the <Interrupt
+**         service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void AD1_OnEnd(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  AD1_OnCalibrationEnd (module Events)
+**
+**     Component   :  AD1 [ADC]
+**     Description :
+**         This event is called when the calibration has been finished.
+**         User should check if the calibration pass or fail by
+**         Calibration status method./nThis event is enabled only if
+**         the <Interrupt service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void AD1_OnCalibrationEnd(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  EOS_OnInterrupt (module Events)
+**
+**     Component   :  EOS [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void EOS_OnInterrupt(void)
+{
+  /* Write your code here ... */
+	LED3_On();
+	TRG_SetTrigger(TRG_LED3_OFF, 200, LED3m_Off, NULL);
+}
+
+/*
+** ===================================================================
+**     Event       :  SW1_OnInterrupt (module Events)
+**
+**     Component   :  SW1 [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void SW1_OnInterrupt(void)
+{
+  /* Write your code here ... */
+	LED3_On();
+	TRG_SetTrigger(TRG_LED3_OFF, 200, LED3m_Off, NULL);
 }
 
 /* END Events */
