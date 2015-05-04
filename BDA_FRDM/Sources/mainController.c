@@ -26,7 +26,7 @@
 #include "EN.h"
 #include "LEDred.h"
 #include "SHDN.h"
-#include "Measure.h"
+#include "Sensor.h"
 #include "Communication.h"
 
 
@@ -66,7 +66,7 @@ void mainController_run(void) {
 	EVNT_SetEvent(EVNT_INIT);
 	int cnt = 0;
 	int valueToSend = 48;
-	loadDummyData();
+	SENSOR_loadDummyData();
 
 
 	for (;;) {
@@ -74,8 +74,9 @@ void mainController_run(void) {
 		EventHandler_HandleEvent();
 
 		while (CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer)) == ERR_BUSOFF) {
-			WAIT1_Waitms(10);
+			//WAIT1_Waitms(10);
 		}
+
 		COM_readCommand();
 		COM_extractCommandInfo();
 	}

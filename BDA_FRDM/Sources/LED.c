@@ -18,6 +18,10 @@ void LED_Deinit(void) {
   /* nothing to do */
 }
 
+void LED2m_Off(){
+	LED2_Off();
+}
+
 void LED3m_Off(){
 	LED3_Off();
 }

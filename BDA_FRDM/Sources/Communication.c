@@ -7,7 +7,7 @@
 
 #include "Platform.h"
 #include "Cpu.h"
-#include "Measure.h"
+#include "Sensor.h"
 #include "Communication.h"
 #include "USB1.h"
 #include "Trigger.h"
@@ -83,11 +83,11 @@ uint16_t buildProtocolHeader(uint8_t command){
 	uint8_t headerH = 0;
 #if PL_HAS_SERVICE_PROTOCOL
 	uint8_t service = 0b00001000;
-	headerH | service;
+	headerH = (headerH | service);
 #endif
 #if PL_HAS_REPEAT_PROTOCOL
 	uint8_t repeat = 0b00110000;
-	headerH | repeat;
+	headerH = (headerH | repeat);
 #endif
 	header = headerL | (headerH<<8);
 	return header;

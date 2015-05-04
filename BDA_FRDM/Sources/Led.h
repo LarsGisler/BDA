@@ -66,6 +66,7 @@
   #define LED3_Deinit() /* do nothing */
 #endif
 
+void LED2m_Off();
 void LED3m_Off();
 
 void LED_Init(void);

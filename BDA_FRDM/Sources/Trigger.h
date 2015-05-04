@@ -21,6 +21,7 @@ typedef enum {
 	TRG_BUZ_BEEP,
 	TRG_KEYPRESS,
 	TRG_HEARTBEAT_OFF,
+	TRG_LED2_OFF,
 	TRG_LED3_OFF,
   /*! \todo Extend the list of triggers as needed */
   TRG_NOF_TRIGGERS /*!< Must be last! */

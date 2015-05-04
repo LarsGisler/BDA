@@ -33,9 +33,11 @@ void COM_readCommand(void);
 
 void COM_extractCommandInfo(void);
 
+void COM_sendCalibrationACK(void);
+
 void COM_sendPixel(uint8_t pix_index);
 
-void COM_sendCalibrationACK(void);
+void COM_sendSensorData(void);
 
 void COM_sendMeasuredDataEnd(void);
 
