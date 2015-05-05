@@ -29,12 +29,9 @@
 #include "Sensor.h"
 #include "Communication.h"
 
-
+extern State actualState;
 
 static uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
-static uint8_t received_char = 0;
-static uint16_t measuredValue = 0;
-
 
 static portTASK_FUNCTION( Main, pvParameters) {
 	KEY_EnableInterrupts();
@@ -65,9 +62,7 @@ void mainController_run(void) {
 	//KEY_EnableInterrupts();
 	EVNT_SetEvent(EVNT_INIT);
 	int cnt = 0;
-	int valueToSend = 48;
-	SENSOR_loadDummyData();
-
+	//int valueToSend = 48;
 
 	for (;;) {
 		//KEY_Scan();
@@ -76,9 +71,23 @@ void mainController_run(void) {
 		while (CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer)) == ERR_BUSOFF) {
 			//WAIT1_Waitms(10);
 		}
-
 		COM_readCommand();
-		COM_extractCommandInfo();
+		switch(actualState){
+		case Waiting:
+			COM_extractCommandInfo();
+			break;
+		case Starting:
+			//SENSOR_Start();
+			COM_extractCommandInfo();
+			break;
+		case Calibrating:
+			COM_extractCommandInfo();
+			break;
+		case Measuring:
+			COM_extractCommandInfo();
+			break;
+		default: break;
+		}
 	}
 
 		/*else {

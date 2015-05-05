@@ -15,8 +15,10 @@
 #include "RTOS.h"
 #include "Shell.h"
 #include "ShellQueue.h"
+#include "Sensor.h"
 
 void PL_Init(void) {
+	SENSOR_init();
 #if PL_HAS_MEALY
 	MEALY_Init();
 #endif

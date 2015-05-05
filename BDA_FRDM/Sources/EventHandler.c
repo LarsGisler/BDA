@@ -13,11 +13,13 @@
 #include "Communication.h"
 #include "Sensor.h"
 
+extern State actualState;
+
 void ProcessInitEvent(void);
 void ProcessLEDHeartbeatEvent(void);
-void ProcessCalibrationEvent(void);
-void ProcessDataRequestEvent(void);
+void ProcessCalibrationFinishedEvent(void);
 void ProcessNewDataEvent(void);
+void ProcessSensorEOS(void);
 void ProcessSW1Event(void);
 void ProcessSW1LongEvent(void);
 void ProcessSW1ReleasedEvent(void);
@@ -25,8 +27,8 @@ void ProcessSW1ReleasedEvent(void);
 
 EventAllocation evtAlloc[] = { { EVNT_INIT, ProcessInitEvent },
 		{EVNT_LED_HEARTBEAT, ProcessLEDHeartbeatEvent },
-		{EVNT_CALIBRATION, ProcessCalibrationEvent},{EVNT_DATA_REQUEST,ProcessDataRequestEvent},
-		{EVNT_NEW_DATA_AVAILABLE, ProcessNewDataEvent},
+		{EVNT_CALIBRATION_FINISHED, ProcessCalibrationFinishedEvent},{EVNT_NEW_DATA,ProcessNewDataEvent},
+		{EVNT_SENSOR_EOS, ProcessSensorEOS},
 		{EVNT_SW1_PRESSED, ProcessSW1Event},{EVNT_SW1_LPRESSED, ProcessSW1LongEvent},{EVNT_SW1_RELEASED, ProcessSW1ReleasedEvent}
 				}; /*!< Allocation between event type and handler function*/
 
@@ -49,16 +51,21 @@ void ProcessLEDHeartbeatEvent(void) {
 	TRG_SetTrigger(TRG_HEARTBEAT_OFF,100/TRG_TICKS_MS,TurnOffHeartBeat,NULL);
 }
 
-void ProcessCalibrationEvent(){
+void ProcessCalibrationFinishedEvent(){
 	COM_sendCalibrationACK();
 }
 
-void ProcessDataRequestEvent(){
+void ProcessNewDataEvent(){
 	COM_sendSensorData();
 }
 
-void ProcessNewDataEvent(){
-	SENSOR_handleNewData();
+void ProcessSensorEOS(){
+	if(actualState == Measuring){
+		SENSOR_handleNewData();
+	}
+	if(actualState == Calibrating){
+		SENSOR_handleCalibrationData();
+	}
 }
 
 void ProcessSW1Event(void) {

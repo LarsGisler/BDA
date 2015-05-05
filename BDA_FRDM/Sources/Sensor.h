@@ -9,6 +9,7 @@
 #define MEASURE_H_
 
 #define NUMBER_OF_PIXEL 256
+#define MAX_PIX_VALUE 65535
 #define CLK_TICK_US	10
 // 2 interrupts per period, video_frequency is 1/4*clk_frequency
 #define VIDEO_TICK_US 80
@@ -16,9 +17,20 @@
 
 #define START_INTEGRATION_TIME (VIDEO_TICK_US*300)
 
+typedef enum State {
+  Waiting,
+  Starting,
+  Calibrating,
+  Measuring,
+} State;
+
 void SENSOR_loadDummyData(void);
 
 void SENSOR_CLK_interrupt(void);
+
+void SENSOR_handleCalibrationData();
+
+void SENSOR_Start(void);
 
 void measurePixel(uint8_t pix_index);
 
@@ -32,7 +44,10 @@ void SENSOR_EOS_interrupt(void);
 
 void SENSOR_handleNewData(void);
 
+void SENSOR_init(void);
 
-
+byte checkIntegrationTime(void);
+int getPixelAvg(void);
+int getPeakAvg(void);
 
 #endif /* MEASURE_H_ */

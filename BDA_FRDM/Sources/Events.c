@@ -33,6 +33,7 @@
 #include "Keys.h"
 #include "Led.h"
 #include "Trigger.h"
+#include "Sensor.h"
 
 #ifdef __cplusplus
 extern "C" {

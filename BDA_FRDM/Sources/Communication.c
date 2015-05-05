@@ -16,7 +16,9 @@
 
 
 
-extern uint16_t sensor_data_ready[];
+extern uint16_t sensor_data[];
+extern State actualState;
+extern int integrationTime_us;
 
 uint8_t header_buffer[BUFFER_SIZE];
 
@@ -35,9 +37,20 @@ void COM_extractCommandInfo(){
 	if (header.command != 0) {
 		LED3_On(); TRG_SetTrigger(TRG_LED3_OFF, 100, LED3m_Off, NULL);
 		switch(header.command){
-			case SEND_DATA_COMMAND: EVNT_SetEvent(EVNT_DATA_REQUEST);
+			case SEND_DATA_COMMAND:
+				//EVNT_SetEvent(EVNT_DATA_REQUEST);
+				actualState = Measuring;
+#if !PL_HAS_SENSOR
+				EVNT_SetEvent(EVNT_NEW_DATA);
+#endif
 				break;
-			case CALIBRATION_COMMAND: EVNT_SetEvent(EVNT_CALIBRATION);
+			case CALIBRATION_COMMAND:
+				//EVNT_SetEvent(EVNT_CALIBRATION);
+				actualState = Calibrating;
+				integrationTime_us = 0;
+#if !PL_HAS_SENSOR
+				EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
+#endif
 				break;
 			default: break;
 		}
@@ -57,8 +70,8 @@ void COM_sendCalibrationACK(){
 }
 
 void COM_sendPixel(uint8_t pix_index){
-	uint8_t byteL = sensor_data_ready[pix_index];
-	uint8_t byteH = sensor_data_ready[pix_index]>>8;
+	uint8_t byteL = sensor_data[pix_index];
+	uint8_t byteH = sensor_data[pix_index]>>8;
 	CDC1_SendChar((char)byteL);
 	CDC1_SendChar((char)byteH);
 }
