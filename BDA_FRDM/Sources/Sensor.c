@@ -11,20 +11,20 @@
 #include "Communication.h"
 #include "AD1.h"
 #include "ST.h"
+#include "LEDred.h"
+#include "EN.h"
+#include "SHDN.h"
 #include "Event.h"
 #include "CS1.h"
 #include "TU2.h"
 #if !PL_HAS_SENSOR
 #include "EventHandler.h"
 #endif
+#include "TestPin.h"
 
-uint16_t sensor_data_raw[NUMBER_OF_PIXEL];
-uint16_t sensor_data[NUMBER_OF_PIXEL];
-uint16_t sensor_calibration_data[NUMBER_OF_PIXEL];
 byte readingData_flag = 0;
-byte newData_flag = 0;
-byte calibrated_flag = 0;
 int integrationTime_us = START_INTEGRATION_TIME;
+int integrationTime_cntr = 0;
 uint8_t integrationTime_adaption = 1;
 
 State actualState = Starting;
@@ -36,15 +36,34 @@ void SENSOR_loadDummyData() {
 }
 
 void SENSOR_CLK_interrupt() {
-	if (SENSOR_measureIntegrationTime) {
-		SENSOR_startMeasurement();
-	}
-	if (readingData_flag) {
-		SENSOR_readSensor();
+	if (actualState != Starting) {
+		if (integrationTime_cntr >= (integrationTime_us / CLK_TICK_US)) {
+			readingData_flag = 1;
+			integrationTime_cntr = 0;
+			pix_index = 0;
+			clk_cntr = 1;
+			ST_ClrVal();
+		} else {
+			integrationTime_cntr++;
+		}
+		if (readingData_flag) {
+
+			if (clk_cntr == TICKS_FOR_VIDEO) {
+				measurePixel(pix_index);
+				clk_cntr = 1;
+				pix_index++;
+			}
+			else {
+				clk_cntr++;
+			}
+			if (clk_cntr == 4) {
+				ST_SetVal();
+			}
+		}
 	}
 }
 
-uint8_t SENSOR_measureIntegrationTime() {
+/*uint8_t SENSOR_measureIntegrationTime() {
 	static int integrationTime_cntr = 0;
 	if (integrationTime_cntr != (integrationTime_us / CLK_TICK_US)) {
 		integrationTime_cntr++;
@@ -52,7 +71,7 @@ uint8_t SENSOR_measureIntegrationTime() {
 	} else {
 		return 1;
 	}
-}
+}*/
 
 void SENSOR_Start() {
 	//(void)TU2_Enable(NULL);
@@ -69,12 +88,12 @@ void SENSOR_handleCalibrationData() {
 	actualState = Waiting;
 }
 
-void measurePixel(uint8_t pix_index) {
-	//(void) AD1_Measure(TRUE);
-	(void) AD1_GetValue16(&sensor_data_raw[pix_index]);
+void measurePixel() {
+	TestPin_SetVal();
+	(void) AD1_Measure(FALSE);
 }
 
-void SENSOR_readSensor() {
+/*void SENSOR_readSensor() {
 	static uint8_t cntr = 0;
 	static uint8_t pix_index = 0;
 
@@ -92,13 +111,13 @@ void SENSOR_readSensor() {
 	if (cntr == 3) {
 		ST_SetVal();
 	}
-}
+}*/
 
-void SENSOR_startMeasurement() {
+/*void SENSOR_startMeasurement() {
 	ST_ClrVal();
 	readingData_flag = 1;
 	integrationTime_us = START_INTEGRATION_TIME;
-}
+}*/
 
 void SENSOR_EOS_interrupt() {
 	readingData_flag = 0;
@@ -113,19 +132,19 @@ void SENSOR_handleNewData() {
 		sensor_data_raw[pix_index] = 0;
 	}
 	CS1_ExitCritical();
-	if (checkIntegrationTime()) {
-		actualState = Measuring;
-	} else {
-		EVNT_SetEvent(EVNT_NEW_DATA);
-		actualState = Waiting;
-	}
+	/*if (checkIntegrationTime()) {
+		 actualState = Measuring;
+		 } else {*/
+	EVNT_SetEvent(EVNT_NEW_DATA);
 }
 
 void SENSOR_init() {
 	readingData_flag = 0;
-	newData_flag = 0;
-	byte calibrated_flag = 0;
 	integrationTime_adaption = 1;
+	pix_index = 0;
+	LEDred_SetVal();
+	EN_SetVal();
+	SHDN_SetVal();
 #if !PL_HAS_SENSOR
 	SENSOR_loadDummyData();
 #endif

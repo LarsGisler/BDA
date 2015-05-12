@@ -34,6 +34,8 @@
 #include "Led.h"
 #include "Trigger.h"
 #include "Sensor.h"
+#include "TestPin.h"
+#include "AD1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -168,6 +170,8 @@ void FRTOS1_vApplicationMallocFailedHook(void)
 void AD1_OnEnd(void)
 {
   /* Write your code here ... */
+	(void) AD1_GetValue16(&sensor_data_raw[pix_index]);
+	TestPin_ClrVal();
 }
 
 /*

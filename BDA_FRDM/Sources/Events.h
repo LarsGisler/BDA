@@ -65,6 +65,8 @@
 #include "BitIoLdd6.h"
 #include "SHDN.h"
 #include "BitIoLdd7.h"
+#include "TestPin.h"
+#include "BitIoLdd8.h"
 #include "USB1.h"
 #include "USB0.h"
 #include "CDC1.h"

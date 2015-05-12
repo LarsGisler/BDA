@@ -13,6 +13,7 @@
 #include "Trigger.h"
 #include "Led.h"
 #include "Event.h"
+#include "LEDred.h"
 
 
 
@@ -39,7 +40,9 @@ void COM_extractCommandInfo(){
 		switch(header.command){
 			case SEND_DATA_COMMAND:
 				//EVNT_SetEvent(EVNT_DATA_REQUEST);
+				if(actualState == Waiting){
 				actualState = Measuring;
+				}
 #if !PL_HAS_SENSOR
 				EVNT_SetEvent(EVNT_NEW_DATA);
 #endif
@@ -47,7 +50,7 @@ void COM_extractCommandInfo(){
 			case CALIBRATION_COMMAND:
 				//EVNT_SetEvent(EVNT_CALIBRATION);
 				actualState = Calibrating;
-				integrationTime_us = 0;
+				//integrationTime_us = 0;
 #if !PL_HAS_SENSOR
 				EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
 #endif
@@ -67,6 +70,7 @@ void COM_sendCalibrationACK(){
 	uint8_t headerH = header>>8;
 	CDC1_SendChar((char)headerL);
 	CDC1_SendChar((char)headerH);
+	LEDred_ClrVal();
 }
 
 void COM_sendPixel(uint8_t pix_index){

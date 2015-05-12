@@ -15,7 +15,13 @@
 #define VIDEO_TICK_US 80
 #define TICKS_FOR_VIDEO (2*4)
 
-#define START_INTEGRATION_TIME (VIDEO_TICK_US*300)
+#define START_INTEGRATION_TIME 1000000 //(VIDEO_TICK_US*300)
+
+uint16_t sensor_data_raw[NUMBER_OF_PIXEL];
+uint16_t sensor_data[NUMBER_OF_PIXEL];
+uint16_t sensor_calibration_data[NUMBER_OF_PIXEL];
+uint8_t pix_index;
+int8_t clk_cntr;
 
 typedef enum State {
   Waiting,
@@ -32,7 +38,7 @@ void SENSOR_handleCalibrationData();
 
 void SENSOR_Start(void);
 
-void measurePixel(uint8_t pix_index);
+void measurePixel();
 
 void SENSOR_readSensor(void);
 
