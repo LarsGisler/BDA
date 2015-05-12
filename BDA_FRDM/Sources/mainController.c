@@ -31,7 +31,7 @@
 
 extern State actualState;
 
-static uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
+extern uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
 
 static portTASK_FUNCTION( Main, pvParameters) {
 	KEY_EnableInterrupts();
@@ -72,7 +72,8 @@ void mainController_run(void) {
 			//WAIT1_Waitms(10);
 		}
 		COM_readCommand();
-		switch(actualState){
+		COM_extractCommandInfo();
+		/*switch(actualState){
 		case Waiting:
 			COM_extractCommandInfo();
 			break;
@@ -87,7 +88,7 @@ void mainController_run(void) {
 			COM_extractCommandInfo();
 			break;
 		default: break;
-		}
+		}*/
 	}
 
 		/*else {

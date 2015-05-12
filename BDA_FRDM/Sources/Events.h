@@ -48,6 +48,7 @@
 #include "ST.h"
 #include "BitIoLdd4.h"
 #include "EOS.h"
+#include "ExtIntLdd1.h"
 #include "CS1.h"
 #include "HF1.h"
 #include "TI1.h"
@@ -56,7 +57,6 @@
 #include "CLS1.h"
 #include "AS1.h"
 #include "ASerialLdd1.h"
-#include "ExtIntLdd1.h"
 #include "EN.h"
 #include "BitIoLdd5.h"
 #include "SW1.h"
@@ -65,6 +65,8 @@
 #include "BitIoLdd6.h"
 #include "SHDN.h"
 #include "BitIoLdd7.h"
+#include "TestPin.h"
+#include "BitIoLdd8.h"
 #include "USB1.h"
 #include "USB0.h"
 #include "CDC1.h"
@@ -153,38 +155,6 @@ void FRTOS1_vApplicationMallocFailedHook(void);
 ** ===================================================================
 */
 
-void AD1_OnEnd(void);
-/*
-** ===================================================================
-**     Event       :  AD1_OnEnd (module Events)
-**
-**     Component   :  AD1 [ADC]
-**     Description :
-**         This event is called after the measurement (which consists
-**         of <1 or more conversions>) is/are finished.
-**         The event is available only when the <Interrupt
-**         service/event> property is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-
-void AD1_OnCalibrationEnd(void);
-/*
-** ===================================================================
-**     Event       :  AD1_OnCalibrationEnd (module Events)
-**
-**     Component   :  AD1 [ADC]
-**     Description :
-**         This event is called when the calibration has been finished.
-**         User should check if the calibration pass or fail by
-**         Calibration status method./nThis event is enabled only if
-**         the <Interrupt service/event> property is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-
 void EOS_OnInterrupt(void);
 /*
 ** ===================================================================
@@ -233,6 +203,38 @@ void SW1_OnInterrupt(void);
 */
 /* ===================================================================*/
 void TU2_OnChannel0(LDD_TUserData *UserDataPtr);
+
+void AD1_OnEnd(void);
+/*
+** ===================================================================
+**     Event       :  AD1_OnEnd (module Events)
+**
+**     Component   :  AD1 [ADC]
+**     Description :
+**         This event is called after the measurement (which consists
+**         of <1 or more conversions>) is/are finished.
+**         The event is available only when the <Interrupt
+**         service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+void AD1_OnCalibrationEnd(void);
+/*
+** ===================================================================
+**     Event       :  AD1_OnCalibrationEnd (module Events)
+**
+**     Component   :  AD1 [ADC]
+**     Description :
+**         This event is called when the calibration has been finished.
+**         User should check if the calibration pass or fail by
+**         Calibration status method./nThis event is enabled only if
+**         the <Interrupt service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
 
 /* END Events */
 

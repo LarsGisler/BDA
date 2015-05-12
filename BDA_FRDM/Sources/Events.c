@@ -34,6 +34,7 @@
 #include "Led.h"
 #include "Trigger.h"
 #include "Sensor.h"
+#include "TestPin.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -153,44 +154,6 @@ void FRTOS1_vApplicationMallocFailedHook(void)
 
 /*
 ** ===================================================================
-**     Event       :  AD1_OnEnd (module Events)
-**
-**     Component   :  AD1 [ADC]
-**     Description :
-**         This event is called after the measurement (which consists
-**         of <1 or more conversions>) is/are finished.
-**         The event is available only when the <Interrupt
-**         service/event> property is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void AD1_OnEnd(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  AD1_OnCalibrationEnd (module Events)
-**
-**     Component   :  AD1 [ADC]
-**     Description :
-**         This event is called when the calibration has been finished.
-**         User should check if the calibration pass or fail by
-**         Calibration status method./nThis event is enabled only if
-**         the <Interrupt service/event> property is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void AD1_OnCalibrationEnd(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
 **     Event       :  EOS_OnInterrupt (module Events)
 **
 **     Component   :  EOS [ExtInt]
@@ -204,7 +167,9 @@ void AD1_OnCalibrationEnd(void)
 void EOS_OnInterrupt(void)
 {
   /* Write your code here ... */
+	//LED3_On(); TRG_SetTrigger(TRG_LED3_OFF, 100, LED3m_Off, NULL);
 	SENSOR_EOS_interrupt();
+
 
 }
 
@@ -250,6 +215,47 @@ void TU2_OnChannel0(LDD_TUserData *UserDataPtr)
 {
   /* Write your code here ... */
 	SENSOR_CLK_interrupt();
+}
+
+/*
+** ===================================================================
+**     Event       :  AD1_OnEnd (module Events)
+**
+**     Component   :  AD1 [ADC]
+**     Description :
+**         This event is called after the measurement (which consists
+**         of <1 or more conversions>) is/are finished.
+**         The event is available only when the <Interrupt
+**         service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void AD1_OnEnd(void)
+{
+  /* Write your code here ... */
+	(void) AD1_GetValue16(&sensor_data_raw[pix_index]);
+	TestPin_ClrVal();
+
+}
+
+/*
+** ===================================================================
+**     Event       :  AD1_OnCalibrationEnd (module Events)
+**
+**     Component   :  AD1 [ADC]
+**     Description :
+**         This event is called when the calibration has been finished.
+**         User should check if the calibration pass or fail by
+**         Calibration status method./nThis event is enabled only if
+**         the <Interrupt service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void AD1_OnCalibrationEnd(void)
+{
+  /* Write your code here ... */
 }
 
 /* END Events */

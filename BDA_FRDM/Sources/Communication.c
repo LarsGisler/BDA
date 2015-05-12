@@ -12,10 +12,12 @@
 #include "USB1.h"
 #include "Trigger.h"
 #include "Led.h"
+#include "LEDred.h"
 #include "Event.h"
+#include "CDC1.h"
 
 
-
+uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
 extern uint16_t sensor_data[];
 extern State actualState;
 extern int integrationTime_us;
@@ -38,16 +40,16 @@ void COM_extractCommandInfo(){
 		LED3_On(); TRG_SetTrigger(TRG_LED3_OFF, 100, LED3m_Off, NULL);
 		switch(header.command){
 			case SEND_DATA_COMMAND:
-				//EVNT_SetEvent(EVNT_DATA_REQUEST);
+				if(actualState == Waiting){
 				actualState = Measuring;
+				}
 #if !PL_HAS_SENSOR
 				EVNT_SetEvent(EVNT_NEW_DATA);
 #endif
 				break;
 			case CALIBRATION_COMMAND:
-				//EVNT_SetEvent(EVNT_CALIBRATION);
 				actualState = Calibrating;
-				integrationTime_us = 0;
+				//integrationTime_us = 0;
 #if !PL_HAS_SENSOR
 				EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
 #endif
@@ -67,6 +69,9 @@ void COM_sendCalibrationACK(){
 	uint8_t headerH = header>>8;
 	CDC1_SendChar((char)headerL);
 	CDC1_SendChar((char)headerH);
+	CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer));
+	actualState = Waiting;
+	LEDred_ClrVal();
 }
 
 void COM_sendPixel(uint8_t pix_index){
@@ -74,6 +79,7 @@ void COM_sendPixel(uint8_t pix_index){
 	uint8_t byteH = sensor_data[pix_index]>>8;
 	CDC1_SendChar((char)byteL);
 	CDC1_SendChar((char)byteH);
+	CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer));
 }
 
 void COM_sendSensorData(){
@@ -81,6 +87,7 @@ void COM_sendSensorData(){
 		COM_sendPixel(pix_index);
 	}
 	COM_sendMeasuredDataEnd();
+	actualState = Waiting;
 }
 
 void COM_sendMeasuredDataEnd(void){
@@ -88,6 +95,7 @@ void COM_sendMeasuredDataEnd(void){
 	uint8_t byteH = MEASURED_DATA_END>>8;
 	CDC1_SendChar((char)byteL);
 	CDC1_SendChar((char)byteH);
+	CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer));
 }
 
 uint16_t buildProtocolHeader(uint8_t command){

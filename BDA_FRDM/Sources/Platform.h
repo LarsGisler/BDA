@@ -29,7 +29,7 @@
 #define PL_HAS_SHELL_QUEUE	(0)
 #define PL_HAS_SERVICE_PROTOCOL	(1)
 #define PL_HAS_REPEAT_PROTOCOL	(0)
-#define PL_HAS_SENSOR		(0)
+#define PL_HAS_SENSOR		(1)
 
 
 #if PL_IS_FRDM
