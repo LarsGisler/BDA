@@ -14,6 +14,7 @@
 #include "Led.h"
 #include "Event.h"
 #include "LEDred.h"
+#include "TestPin.h"
 
 
 
@@ -49,8 +50,11 @@ void COM_extractCommandInfo(){
 				break;
 			case CALIBRATION_COMMAND:
 				//EVNT_SetEvent(EVNT_CALIBRATION);
+				for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
+						sensor_calibration_data[pix_index] = 0;
+				}
+				integrationTime_us = START_INTEGRATION_TIME;
 				actualState = Calibrating;
-				//integrationTime_us = 0;
 #if !PL_HAS_SENSOR
 				EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
 #endif
@@ -81,6 +85,7 @@ void COM_sendPixel(uint8_t pix_index){
 }
 
 void COM_sendSensorData(){
+	TestPin_SetVal();
 	for(int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++){
 		COM_sendPixel(pix_index);
 	}
@@ -92,6 +97,7 @@ void COM_sendMeasuredDataEnd(void){
 	uint8_t byteH = MEASURED_DATA_END>>8;
 	CDC1_SendChar((char)byteL);
 	CDC1_SendChar((char)byteH);
+	TestPin_ClrVal();
 }
 
 uint16_t buildProtocolHeader(uint8_t command){

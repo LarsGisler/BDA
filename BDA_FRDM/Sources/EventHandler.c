@@ -60,11 +60,11 @@ void ProcessNewDataEvent(){
 }
 
 void ProcessSensorEOS(){
-	if(actualState == Measuring){
-		SENSOR_handleNewData();
-	}
 	if(actualState == Calibrating){
 		SENSOR_handleCalibrationData();
+	}
+	else{
+		SENSOR_handleNewData();
 	}
 }
 
