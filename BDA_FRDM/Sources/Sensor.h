@@ -10,9 +10,9 @@
 
 #define NUMBER_OF_PIXEL 256
 #define MAX_PIX_VALUE 65535
-#define CLK_TICK_US	10
+#define CLK_TICK_US	40
 // 2 interrupts per period, video_frequency is 1/4*clk_frequency
-#define VIDEO_TICK_US 80
+#define VIDEO_TICK_US 4*CLK_TICK_US
 #define TICKS_FOR_VIDEO (2*4)
 
 #define START_INTEGRATION_TIME 1000000 //(VIDEO_TICK_US*300)

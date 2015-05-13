@@ -41,22 +41,20 @@ void SENSOR_CLK_interrupt() {
 			readingData_flag = 1;
 			integrationTime_cntr = 0;
 			pix_index = 0;
-			clk_cntr = 1;
+			clk_cntr = 2;
 			ST_ClrVal();
 		} else {
 			integrationTime_cntr++;
 		}
 		if (readingData_flag) {
-
 			if (clk_cntr == TICKS_FOR_VIDEO) {
 				measurePixel(pix_index);
 				clk_cntr = 1;
-				pix_index++;
 			}
 			else {
 				clk_cntr++;
 			}
-			if (clk_cntr == 4) {
+			if (clk_cntr == 5) {
 				ST_SetVal();
 			}
 		}
@@ -136,6 +134,7 @@ void SENSOR_handleNewData() {
 		 actualState = Measuring;
 		 } else {*/
 	EVNT_SetEvent(EVNT_NEW_DATA);
+	actualState = Waiting;
 }
 
 void SENSOR_init() {
