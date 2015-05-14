@@ -21,6 +21,7 @@
 extern uint16_t sensor_data[];
 extern State actualState;
 extern int integrationTime_us;
+uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
 
 uint8_t header_buffer[BUFFER_SIZE];
 
@@ -74,6 +75,7 @@ void COM_sendCalibrationACK(){
 	uint8_t headerH = header>>8;
 	CDC1_SendChar((char)headerL);
 	CDC1_SendChar((char)headerH);
+	CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer));
 	LEDred_ClrVal();
 }
 
@@ -82,10 +84,11 @@ void COM_sendPixel(uint8_t pix_index){
 	uint8_t byteH = sensor_data[pix_index]>>8;
 	CDC1_SendChar((char)byteL);
 	CDC1_SendChar((char)byteH);
+	CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer));
 }
 
 void COM_sendSensorData(){
-	TestPin_SetVal();
+	//TestPin_SetVal();
 	for(int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++){
 		COM_sendPixel(pix_index);
 	}
@@ -97,7 +100,8 @@ void COM_sendMeasuredDataEnd(void){
 	uint8_t byteH = MEASURED_DATA_END>>8;
 	CDC1_SendChar((char)byteL);
 	CDC1_SendChar((char)byteH);
-	TestPin_ClrVal();
+	CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer));
+	//TestPin_ClrVal();
 }
 
 uint16_t buildProtocolHeader(uint8_t command){

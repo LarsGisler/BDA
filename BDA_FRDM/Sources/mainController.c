@@ -31,7 +31,7 @@
 
 extern State actualState;
 
-static uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
+extern uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
 
 static portTASK_FUNCTION( Main, pvParameters) {
 	KEY_EnableInterrupts();

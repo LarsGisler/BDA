@@ -172,7 +172,7 @@ void AD1_OnEnd(void)
   /* Write your code here ... */
 	(void) AD1_GetValue16(&sensor_data_raw[pix_index]);
 	pix_index++;
-	//TestPin_ClrVal();
+	TestPin_ClrVal();
 }
 
 /*

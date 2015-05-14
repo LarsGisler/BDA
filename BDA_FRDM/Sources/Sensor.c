@@ -106,7 +106,7 @@ void SENSOR_handleCalibrationData() {
 }
 
 void measurePixel() {
-	//TestPin_SetVal();
+	TestPin_SetVal();
 	(void) AD1_Measure(FALSE);
 }
 
@@ -142,6 +142,7 @@ void SENSOR_EOS_interrupt() {
 }
 
 void SENSOR_handleNewData() {
+	uint8_t correction_factor = integrationTime_adaption;
 	CS1_CriticalVariable();
 	CS1_EnterCritical();
 	for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
@@ -155,6 +156,9 @@ void SENSOR_handleNewData() {
 	}
 	CS1_ExitCritical();
 	if ((!adaptIntegrationTime()) && (actualState == Measuring)) {
+		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
+			sensor_data[pix_index] = sensor_data[pix_index]/correction_factor;
+		}
 		EVNT_SetEvent(EVNT_NEW_DATA);
 		actualState = Waiting;
 	}
@@ -177,32 +181,32 @@ void SENSOR_init() {
 byte adaptIntegrationTime() {
 	uint8_t adapt_flag = 0;
 	int static peak_timeout = 10;
-	int static peak_timeout_active = 0;
+	int static peak_detected = 0;
 	int pixel_avg = getPixelAvg();
 	int nbrOfPeaks =  getNbrOfPeaks();
 
 	if((nbrOfPeaks >= 2) && (pixel_avg < (0.4*MAX_PIX_VALUE_CALIBRATED))){
-		peak_timeout_active = 1;
-		peak_timeout = 10;
-		if(integrationTime_us >= 400000){
-			peak_timeout = 3;
+		peak_detected = 1;
+		peak_timeout = 40;
+		if(integrationTime_us >= 800000){
+			peak_timeout = 6;
 		}
 	}
-	if(peak_timeout_active && peak_timeout != 0){
-		peak_timeout--;
+	if(peak_detected && (peak_timeout != 0)){
+			peak_timeout--;
 	}
-	else{
-		peak_timeout_active = 0;
+	if((pixel_avg < 0.05*MAX_PIX_VALUE_CALIBRATED) || (peak_timeout == 0)){
+		peak_detected = 0;
 	}
 
-	if((pixel_avg > 0.4*MAX_PIX_VALUE_CALIBRATED) || (nbrOfPeaks >= 2)){
+	if((pixel_avg >= 0.4*MAX_PIX_VALUE_CALIBRATED) || (nbrOfPeaks >= 2)){
 		if(integrationTime_adaption != 1){
 			integrationTime_us = integrationTime_us/2;
 			integrationTime_adaption = integrationTime_adaption/2;
 			adapt_flag = 1;
 		}
 	}
-	if((pixel_avg < 0.1*MAX_PIX_VALUE_CALIBRATED) && (!peak_timeout_active)){
+	if((pixel_avg < 0.2*MAX_PIX_VALUE_CALIBRATED) && (!peak_detected)){
 		integrationTime_us = integrationTime_us*2;
 		integrationTime_adaption = integrationTime_adaption*2;
 		adapt_flag = 1;
