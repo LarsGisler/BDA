@@ -12,9 +12,9 @@
 #define MAX_PIX_VALUE 65535
 // assume a sensor offset of 7300
 #define MAX_PIX_VALUE_CALIBRATED 58235
-#define CLK_TICK_US	20
+#define CLK_TICK_US	40
 // 2 interrupts per period, video_frequency is 1/4*clk_frequency
-#define TICKS_FOR_VIDEO (2*4)
+#define TICKS_FOR_VIDEO (1)
 
 #define START_INTEGRATION_TIME 50000 //(VIDEO_TICK_US*300)
 

@@ -50,8 +50,6 @@
 #include "EOS.h"
 #include "CS1.h"
 #include "HF1.h"
-#include "TI1.h"
-#include "TimerIntLdd1.h"
 #include "TU1.h"
 #include "CLS1.h"
 #include "AS1.h"
@@ -235,6 +233,27 @@ void SW1_OnInterrupt(void);
 */
 /* ===================================================================*/
 void TU2_OnChannel0(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
+**     Event       :  TU1_OnChannel0 (module Events)
+**
+**     Component   :  TU1 [TimerUnit_LDD]
+*/
+/*!
+**     @brief
+**         Called if compare register match the counter registers or
+**         capture register has a new content. OnChannel0 event and
+**         Timer unit must be enabled. See [SetEventMask] and
+**         [GetEventMask] methods. This event is available only if a
+**         [Interrupt] is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. The pointer passed as
+**                           the parameter of Init method.
+*/
+/* ===================================================================*/
+void TU1_OnChannel0(LDD_TUserData *UserDataPtr);
 
 /* END Events */
 

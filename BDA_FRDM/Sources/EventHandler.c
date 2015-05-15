@@ -39,7 +39,7 @@ void EventHandler_HandleEvent(void) {
 void ProcessInitEvent(void) {
 	//CLS1_SendStr("Hello from FRDM\r\n",CLS1_GetStdio()->stdOut);
 	LED2_On();
-	TRG_SetTrigger(TRG_LED2_OFF,500/TRG_TICKS_MS,LED2m_Off,NULL);
+	TRG_SetTrigger(TRG_LED2_OFF,500000/TRG_TICKS_MS,LED2m_Off,NULL);
 }
 
 void TurnOffHeartBeat(TRG_CallBackDataPtr data){
@@ -48,7 +48,7 @@ void TurnOffHeartBeat(TRG_CallBackDataPtr data){
 
 void ProcessLEDHeartbeatEvent(void) {
 	LED1_On();
-	TRG_SetTrigger(TRG_HEARTBEAT_OFF,100/TRG_TICKS_MS,TurnOffHeartBeat,NULL);
+	TRG_SetTrigger(TRG_HEARTBEAT_OFF,1000000/TRG_TICKS_MS,TurnOffHeartBeat,NULL);
 }
 
 void ProcessCalibrationFinishedEvent(){

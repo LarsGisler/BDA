@@ -78,6 +78,7 @@ void Cpu_OnNMIINT(void)
 */
 void TI1_OnInterrupt(void)
 {
+	SENSOR_CLK_interrupt();
 	TMR_OnInterrupt();
 	/* Write your code here ... */
 }
@@ -254,7 +255,33 @@ void SW1_OnInterrupt(void)
 void TU2_OnChannel0(LDD_TUserData *UserDataPtr)
 {
   /* Write your code here ... */
+	//SENSOR_CLK_interrupt();
+}
+
+/*
+** ===================================================================
+**     Event       :  TU1_OnChannel0 (module Events)
+**
+**     Component   :  TU1 [TimerUnit_LDD]
+*/
+/*!
+**     @brief
+**         Called if compare register match the counter registers or
+**         capture register has a new content. OnChannel0 event and
+**         Timer unit must be enabled. See [SetEventMask] and
+**         [GetEventMask] methods. This event is available only if a
+**         [Interrupt] is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. The pointer passed as
+**                           the parameter of Init method.
+*/
+/* ===================================================================*/
+void TU1_OnChannel0(LDD_TUserData *UserDataPtr)
+{
+  /* Write your code here ... */
 	SENSOR_CLK_interrupt();
+	TMR_OnInterrupt();
 }
 
 /* END Events */

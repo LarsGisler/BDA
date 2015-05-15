@@ -37,27 +37,27 @@ void SENSOR_loadDummyData() {
 
 void SENSOR_CLK_interrupt() {
 	if (actualState != Starting) {
+		ST_SetVal();
 		if (integrationTime_cntr >= (integrationTime_us / CLK_TICK_US)) {
 			readingData_flag = 1;
 			integrationTime_cntr = 0;
 			pix_index = 0;
-			clk_cntr = 2;
+			clk_cntr = 1;
 			ST_ClrVal();
 		} else {
 			integrationTime_cntr++;
 		}
 		if (readingData_flag) {
-			if (clk_cntr == TICKS_FOR_VIDEO) {
+			if(clk_cntr == 2){
 				measurePixel(pix_index);
-				clk_cntr = 1;
+				clk_cntr=1;
 			}
-			else {
+			else{
 				clk_cntr++;
 			}
-			if (clk_cntr == 5) {
-				ST_SetVal();
-			}
+
 		}
+
 	}
 }
 

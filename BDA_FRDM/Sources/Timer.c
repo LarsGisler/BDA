@@ -10,7 +10,7 @@
 #include "Event.h"
 #include "Trigger.h"
 
-#define TICKS_FOR_HEARTBEAT (1000/TMR_TICK_MS)
+#define TICKS_FOR_HEARTBEAT (1000000/TMR_TICK_US)
 
 
 void TMR_OnInterrupt(void){
@@ -20,7 +20,7 @@ void TMR_OnInterrupt(void){
 	  TRG_IncTick();
 	#endif
 	  cntr++;
-	  if (cntr==(1000/TMR_TICK_MS)) {
+	  if (cntr==(10000000/TMR_TICK_US)) {
 	#if 1 /* setting an event */
 	    EVNT_SetEvent(EVNT_LED_HEARTBEAT);
 	#else /* toggling directly the LED */
