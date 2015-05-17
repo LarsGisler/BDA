@@ -41,7 +41,7 @@ void SENSOR_CLK_interrupt() {
 			readingData_flag = 1;
 			integrationTime_cntr = 0;
 			pix_index = 0;
-			clk_cntr = 2;
+			clk_cntr = 3;
 			ST_ClrVal();
 		} else {
 			integrationTime_cntr++;
@@ -54,7 +54,7 @@ void SENSOR_CLK_interrupt() {
 			else {
 				clk_cntr++;
 			}
-			if (clk_cntr == 5) {
+			if (clk_cntr == 6) {
 				ST_SetVal();
 			}
 		}
@@ -211,17 +211,17 @@ byte adaptIntegrationTime() {
 		integrationTime_adaption = integrationTime_adaption*2;
 		adapt_flag = 1;
 	}
-	// if the integrationTime exceeds 3200ms
-	if(integrationTime_adaption >= 64){
+	// if the integrationTime exceeds 4480ms
+	if(integrationTime_adaption >= 128){
+		integrationTime_us = 128*START_INTEGRATION_TIME;
+		integrationTime_adaption = 128;
 		adapt_flag = 0;
-		integrationTime_us = 3200000;
-		integrationTime_adaption = 64;
 	}
 	// if the integrationTime is smaller than 50ms
 	if(integrationTime_adaption <= 1){
-		adapt_flag = 0;
-		integrationTime_us = 50000;
+		integrationTime_us = START_INTEGRATION_TIME;
 		integrationTime_adaption = 1;
+		adapt_flag = 0;
 	}
 	if(adapt_flag == 1){
 		return 1;
