@@ -16,6 +16,8 @@
 #include "LEDred.h"
 #include "TestPin.h"
 
+xSemaphoreHandle sem_calibration = NULL;
+xSemaphoreHandle sem_dataCommand = NULL;
 
 
 extern uint16_t sensor_data[];
@@ -25,6 +27,19 @@ uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
 
 uint8_t header_buffer[BUFFER_SIZE];
 
+static portTASK_FUNCTION(communication, pvParameters) {
+	for (;;) {
+		 if(FRTOS1_xSemaphoreTake(sem_calibration,0/portTICK_RATE_MS)==pdTRUE) {
+				  COM_sendCalibrationACK();
+			  }
+		 if(FRTOS1_xSemaphoreTake(sem_dataCommand,0/portTICK_RATE_MS)==pdTRUE) {
+			 if(FRTOS1_xSemaphoreTake(sem_dataAvailable,0)==pdTRUE) {
+					  COM_sendSensorData();
+				  }
+			  }
+		 FRTOS1_vTaskDelay(20 / portTICK_RATE_MS);
+	}
+}
 
 void COM_readCommand(){
 	CDC1_GetChar(&header_buffer[0]);
@@ -44,6 +59,7 @@ void COM_extractCommandInfo(){
 				//EVNT_SetEvent(EVNT_DATA_REQUEST);
 				if(actualState == Waiting){
 				actualState = Measuring;
+				xSemaphoreGive(sem_dataCommand);
 				}
 #if !PL_HAS_SENSOR
 				EVNT_SetEvent(EVNT_NEW_DATA);
@@ -118,6 +134,25 @@ uint16_t buildProtocolHeader(uint8_t command){
 #endif
 	header = headerL | (headerH<<8);
 	return header;
+
+}
+
+void COM_Init(){
+	FRTOS1_vSemaphoreCreateBinary(sem_calibration);
+	if (sem_calibration == NULL) {
+		for (;;) {}
+	}
+	FRTOS1_vSemaphoreCreateBinary(sem_dataCommand);
+	if (sem_dataCommand == NULL) {
+			for (;;) {}
+		}
+	if (FRTOS1_xTaskCreate(communication, "com task", configMINIMAL_STACK_SIZE, NULL, 2, NULL) != pdPASS) {
+			for (;;) {
+			}
+	}
+}
+
+void COM_Deinit(){
 
 }
 

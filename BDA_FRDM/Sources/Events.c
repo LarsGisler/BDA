@@ -30,17 +30,18 @@
 #include "Cpu.h"
 #include "Events.h"
 #include "Timer.h"
-#include "Keys.h"
 #include "Led.h"
 #include "Trigger.h"
 #include "Sensor.h"
 #include "TestPin.h"
 #include "AD1.h"
+#include "FRTOS1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+extern xSemaphoreHandle sem_EOS;
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -60,26 +61,6 @@ extern "C" {
 void Cpu_OnNMIINT(void)
 {
   /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  TI1_OnInterrupt (module Events)
-**
-**     Component   :  TI1 [TimerInt]
-**     Description :
-**         When a timer interrupt occurs this event is called (only
-**         when the component is enabled - <Enable> and the events are
-**         enabled - <EnableEvent>). This event is enabled only if a
-**         <interrupt service/event> is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void TI1_OnInterrupt(void)
-{
-	TMR_OnInterrupt();
-	/* Write your code here ... */
 }
 
 /*
@@ -209,8 +190,8 @@ void AD1_OnCalibrationEnd(void)
 void EOS_OnInterrupt(void)
 {
   /* Write your code here ... */
-	SENSOR_EOS_interrupt();
-
+	//SENSOR_EOS_interrupt();
+	xSemaphoreGiveFromISR(sem_EOS, NULL);
 }
 
 /*
@@ -255,6 +236,77 @@ void TU2_OnChannel0(LDD_TUserData *UserDataPtr)
 {
   /* Write your code here ... */
 	SENSOR_CLK_interrupt();
+}
+
+/*
+** ===================================================================
+**     Event       :  FRTOS1_vApplicationStackOverflowHook (module Events)
+**
+**     Component   :  FRTOS1 [FreeRTOS]
+**     Description :
+**         if enabled, this hook will be called in case of a stack
+**         overflow.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         pxTask          - Task handle
+**       * pcTaskName      - Pointer to task name
+**     Returns     : Nothing
+** ===================================================================
+*/
+void FRTOS1_vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
+{
+  /* This will get called if a stack overflow is detected during the context
+     switch.  Set configCHECK_FOR_STACK_OVERFLOWS to 2 to also check for stack
+     problems within nested interrupts, but only do this for debug purposes as
+     it will increase the context switch time. */
+  (void)pxTask;
+  (void)pcTaskName;
+  taskDISABLE_INTERRUPTS();
+  /* Write your code here ... */
+  for(;;) {}
+}
+
+/*
+** ===================================================================
+**     Event       :  FRTOS1_vApplicationIdleHook (module Events)
+**
+**     Component   :  FRTOS1 [FreeRTOS]
+**     Description :
+**         If enabled, this hook will be called when the RTOS is idle.
+**         This might be a good place to go into low power mode.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void FRTOS1_vApplicationIdleHook(void)
+{
+  /* Called whenever the RTOS is idle (from the IDLE task).
+     Here would be a good place to put the CPU into low power mode. */
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  TU2_OnCounterRestart (module Events)
+**
+**     Component   :  TU2 [TimerUnit_LDD]
+*/
+/*!
+**     @brief
+**         Called if counter overflow/underflow or counter is
+**         reinitialized by modulo or compare register matching.
+**         OnCounterRestart event and Timer unit must be enabled. See
+**         [SetEventMask] and [GetEventMask] methods. This event is
+**         available only if a [Interrupt] is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. The pointer passed as
+**                           the parameter of Init method.
+*/
+/* ===================================================================*/
+void TU2_OnCounterRestart(LDD_TUserData *UserDataPtr)
+{
+  /* Write your code here ... */
 }
 
 /* END Events */

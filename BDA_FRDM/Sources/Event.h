@@ -17,13 +17,8 @@
 
 typedef enum EVNT_Handle {
   EVNT_INIT,            /*!< System Initialization Event */
-  EVNT_LED_HEARTBEAT,
-  EVNT_CALIBRATION_FINISHED,
-  EVNT_NEW_DATA,
-  EVNT_SENSOR_EOS,
+  //EVNT_LED_HEARTBEAT,
   EVNT_SW1_PRESSED,
-  EVNT_SW1_LPRESSED,
-  EVNT_SW1_RELEASED,
   /*!< \todo Your events here */
   EVNT_NOF_EVENTS       /*!< Must be last one! */
 } EVNT_Handle;

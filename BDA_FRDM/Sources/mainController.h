@@ -2,7 +2,7 @@
  * mainController.h
  *
  *  Created on: 24.02.2015
- *      Author: Cyrill
+ *      Author: Lars Gisler
  */
 
 #ifndef MAINCONTROLLER_H_

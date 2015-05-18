@@ -2,7 +2,7 @@
  * mainController.c
  *
  *  Created on: 24.02.2015
- *      Author: Cyrill
+ *      Author: Lars Gisler
  */
 
 #include "mainController.h"
@@ -12,11 +12,9 @@
 #include "EventHandler.h"
 #include "Timer.h"
 #include "Cpu.h"
-#include "Mealy.h"
 #include "Platform.h"
-#include "Keys.h"
 #include "CLS1.h"
-//#include "FRTOS1.h"
+#include "FRTOS1.h"
 #include "RTOS.h"
 #include "Shell.h"
 #include "USB1.h"
@@ -33,13 +31,18 @@ extern State actualState;
 
 extern uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
 
-static portTASK_FUNCTION( Main, pvParameters) {
-	KEY_EnableInterrupts();
-	EVNT_SetEvent(EVNT_INIT);
+static portTASK_FUNCTION(Main, pvParameters) {
+
 	for (;;) {
-
+		EventHandler_HandleEvent();
+		while (CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer)) == ERR_BUSOFF) {
+					//WAIT1_Waitms(10);
+		}
+		COM_readCommand();
+		COM_extractCommandInfo();
+		FRTOS1_vTaskDelay(20 / portTICK_RATE_MS);
 	}
-
+}
 	/*
 	 KEY_Scan();
 	 EventHandler_HandleEvent();
@@ -53,26 +56,16 @@ static portTASK_FUNCTION( Main, pvParameters) {
 	 FRTOS1_vTaskDelay(50 / portTICK_RATE_MS);
 	 */
 
-}
 
 void mainController_run(void) {
-
 	PL_Init();
 
-	//KEY_EnableInterrupts();
 	EVNT_SetEvent(EVNT_INIT);
-	int cnt = 0;
-	//int valueToSend = 48;
-
-	for (;;) {
-		//KEY_Scan();
-		EventHandler_HandleEvent();
-
-		while (CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer)) == ERR_BUSOFF) {
-			//WAIT1_Waitms(10);
-		}
-		COM_readCommand();
-		COM_extractCommandInfo();
+	if (FRTOS1_xTaskCreate(Main, (signed portCHAR *)"MAIN", configMINIMAL_STACK_SIZE, NULL, 2, NULL) != pdPASS) {
+		for(;;){} /* error */
+	}
+	RTOS_Run();
+}
 
 		/*switch(actualState){
 		case Waiting:
@@ -89,8 +82,8 @@ void mainController_run(void) {
 			COM_extractCommandInfo();
 			break;
 		default: break;
-		}*/
-	}
+		}
+	}*/
 
 		/*else {
 				WAIT1_Waitms(10);
@@ -103,9 +96,9 @@ void mainController_run(void) {
 
 					}
 				}
-			}*/
+			}
 
-}
+}*/
 
 //if (FRTOS1_xTaskCreate(Main, (signed portCHAR *)"MAIN", configMINIMAL_STACK_SIZE, NULL, 1, NULL) != pdPASS) {
 //   for(;;){} /* error */

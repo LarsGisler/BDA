@@ -7,21 +7,23 @@
 
 #include "Platform.h"
 #include "LED.h"
-#include "Mealy.h"
-#include "Keys.h"
 #include "Event.h"
 #include "Trigger.h"
-#include "Buzzer.h"
 #include "RTOS.h"
 #include "Shell.h"
 #include "ShellQueue.h"
 #include "Sensor.h"
+#include "Communication.h"
 
 void PL_Init(void) {
-	SENSOR_init();
-#if PL_HAS_MEALY
-	MEALY_Init();
+
+#if PL_HAS_SENSOR
+	SENSOR_Init();
 #endif
+#if PL_HAS_COM
+	COM_Init();
+#endif
+
 #if PL_HAS_LED
 	LED_Init();
 #endif
@@ -34,12 +36,6 @@ void PL_Init(void) {
 	KEY_Init();
 #endif
 
-#if PL_HAS_TRIGGER
-	TRG_Init();
-#endif
-#if PL_HAS_BUZZER
-	BUZ_Init();
-#endif
 #if PL_HAS_RTOS
 	 RTOS_Init();
 #endif
@@ -53,19 +49,20 @@ void PL_Init(void) {
 
 void PL_Deinit(void) {
 
-#if PL_HAS_MEALY
-	MEALY_Deinit();
+#if PL_HAS_SENSOR
+	SENSOR_Deinit();
 #endif
+
+#if PL_HAS_COM
+	COM_Deinit();
+#endif
+
 #if PL_HAS_LED
 	LED_Deinit();
 #endif
 
 #if PL_HAS_EVENTS
 	EVNT_Deinit();
-#endif
-
-#if PL_HAS_KEYS
-	KEY_Deinit();
 #endif
 
 #if PL_HAS_TRIGGER

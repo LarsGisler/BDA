@@ -22,9 +22,9 @@ void TMR_OnInterrupt(void){
 	  cntr++;
 	  if (cntr==(1000/TMR_TICK_MS)) {
 	#if 1 /* setting an event */
-	    EVNT_SetEvent(EVNT_LED_HEARTBEAT);
-	#else /* toggling directly the LED */
-	    LED1_Neg();
+	    //EVNT_SetEvent(EVNT_LED_HEARTBEAT);
+	#else // toggling directly the LED
+	   // LED1_Neg();
 	#endif
 	    cntr = 0;
 	  }

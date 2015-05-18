@@ -1,8 +1,8 @@
 /*
- * Measure.c
+ * Sensor.c
  *
  *  Created on: 03.05.2015
- *      Author: Lars
+ *      Author: Lars Gisler
  */
 
 #include "Platform.h"
@@ -22,6 +22,9 @@
 #endif
 #include "TestPin.h"
 
+xSemaphoreHandle sem_dataAvailable = NULL;
+xSemaphoreHandle sem_EOS = NULL;
+
 byte readingData_flag = 0;
 int integrationTime_us = START_INTEGRATION_TIME;
 int integrationTime_cntr = 0;
@@ -34,6 +37,22 @@ void SENSOR_loadDummyData() {
 		sensor_data[pix_index] = pix_index * 100;
 	}
 }
+
+static portTASK_FUNCTION(EOS_handler, pvParameters) {
+	for (;;) {
+		 if(xSemaphoreTake(sem_EOS,0/portTICK_RATE_MS)==pdTRUE) {
+			 readingData_flag = 0;
+			 if(actualState == Calibrating){
+			 		SENSOR_handleCalibrationData();
+			 	}
+			 else{
+			 		SENSOR_handleNewData();
+			 }
+		 }
+		 //FRTOS1_vTaskDelay(10 / portTICK_RATE_MS);
+	}
+}
+
 
 void SENSOR_CLK_interrupt() {
 	if (actualState != Starting) {
@@ -79,23 +98,22 @@ void SENSOR_Start() {
 void SENSOR_handleCalibrationData() {
 	static uint8_t calibration_cntr = 0;
 	if(calibration_cntr != 0){
-		CS1_CriticalVariable();
-		CS1_EnterCritical();
+		FRTOS1_taskENTER_CRITICAL();
 		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
 			sensor_calibration_data[pix_index] += sensor_data_raw[pix_index];
 			sensor_data_raw[pix_index] = 0;
 		}
-		CS1_ExitCritical();
+		FRTOS1_taskEXIT_CRITICAL();
 	}
 	if(calibration_cntr == 3){
-		CS1_CriticalVariable();
-		CS1_EnterCritical();
+		FRTOS1_taskENTER_CRITICAL();
 		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
 				sensor_calibration_data[pix_index] = sensor_calibration_data[pix_index]/3;
 		}
-		CS1_ExitCritical();
+		FRTOS1_taskEXIT_CRITICAL();
 		integrationTime_us = START_INTEGRATION_TIME;
-		EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
+		//EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
+		xSemaphoreGive(sem_calibration);
 		actualState = Waiting;
 		calibration_cntr = 0;
 	}
@@ -136,15 +154,10 @@ void measurePixel() {
 	integrationTime_us = START_INTEGRATION_TIME;
 }*/
 
-void SENSOR_EOS_interrupt() {
-	readingData_flag = 0;
-	EVNT_SetEvent(EVNT_SENSOR_EOS);
-}
 
 void SENSOR_handleNewData() {
 	uint8_t correction_factor = integrationTime_adaption;
-	CS1_CriticalVariable();
-	CS1_EnterCritical();
+	FRTOS1_taskENTER_CRITICAL();
 	for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
 		int pixel_data = (sensor_data_raw[pix_index] - sensor_calibration_data[pix_index]);
 		if((pixel_data < 0) || (pixel_data > 60000)){
@@ -154,17 +167,18 @@ void SENSOR_handleNewData() {
 			sensor_data[pix_index] = pixel_data;
 		}
 	}
-	CS1_ExitCritical();
+	FRTOS1_taskEXIT_CRITICAL();
 	if ((!adaptIntegrationTime()) && (actualState == Measuring)) {
 		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
 			sensor_data[pix_index] = sensor_data[pix_index]/correction_factor;
 		}
-		EVNT_SetEvent(EVNT_NEW_DATA);
+		//EVNT_SetEvent(EVNT_NEW_DATA);
+		xSemaphoreGive(sem_dataAvailable);
 		actualState = Waiting;
 	}
 }
 
-void SENSOR_init() {
+void SENSOR_Init() {
 	readingData_flag = 0;
 	integrationTime_adaption = 1;
 	pix_index = 0;
@@ -172,11 +186,28 @@ void SENSOR_init() {
 	EN_SetVal();
 	SHDN_SetVal();
 	integrationTime_us = START_INTEGRATION_TIME;
+	FRTOS1_vSemaphoreCreateBinary(sem_dataAvailable);
+		if (sem_dataAvailable == NULL) {
+			for (;;) {}
+		}
+	FRTOS1_vSemaphoreCreateBinary(sem_EOS);
+		if (sem_EOS == NULL) {
+			for (;;) {}
+		}
+	if (FRTOS1_xTaskCreate(EOS_handler, "eos handler", configMINIMAL_STACK_SIZE, NULL, 2, NULL) != pdPASS) {
+			for (;;) {
+			}
+		}
 #if !PL_HAS_SENSOR
 	SENSOR_loadDummyData();
 #endif
 	actualState = Starting;
 }
+
+void SENSOR_Deinit() {
+
+}
+
 
 byte adaptIntegrationTime() {
 	uint8_t adapt_flag = 0;

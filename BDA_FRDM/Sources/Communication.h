@@ -8,6 +8,11 @@
 #ifndef COMMUNICATION_H_
 #define COMMUNICATION_H_
 
+#include "Platform.h"
+#if PL_HAS_RTOS
+#include "FRTOS1.h"
+#endif
+
 // Bitmasks to handle protocol header
 #define COMMAND_MASK 0b00001111
 #define SERVICE_MASK 0b00001000
@@ -22,6 +27,9 @@
 #define MEASURED_DATA_END 0b1111111111111111
 
 #define BUFFER_SIZE 2
+
+extern xSemaphoreHandle sem_calibration;
+extern xSemaphoreHandle sem_dataCommand;
 
 struct
 { 	char command;
@@ -42,6 +50,9 @@ void COM_sendSensorData(void);
 void COM_sendMeasuredDataEnd(void);
 
 uint16_t buildProtocolHeader(uint8_t command);
+
+void COM_Init(void);
+void COM_Deinit(void);
 
 
 #endif /* COMMUNICATION_H_ */
