@@ -61,8 +61,6 @@
 #include "ExtIntLdd2.h"
 #include "LEDred.h"
 #include "BitIoLdd6.h"
-#include "SHDN.h"
-#include "BitIoLdd7.h"
 #include "TestPin.h"
 #include "BitIoLdd8.h"
 #include "USB1.h"

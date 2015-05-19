@@ -142,10 +142,12 @@ void COM_Init(){
 	if (sem_calibration == NULL) {
 		for (;;) {}
 	}
+	FRTOS1_xSemaphoreTake(sem_calibration,0/portTICK_RATE_MS);
 	FRTOS1_vSemaphoreCreateBinary(sem_dataCommand);
 	if (sem_dataCommand == NULL) {
 			for (;;) {}
 		}
+	FRTOS1_xSemaphoreTake(sem_dataCommand,0/portTICK_RATE_MS);
 	if (FRTOS1_xTaskCreate(communication, "com task", configMINIMAL_STACK_SIZE, NULL, 2, NULL) != pdPASS) {
 			for (;;) {
 			}

@@ -13,7 +13,6 @@
 #include "ST.h"
 #include "LEDred.h"
 #include "EN.h"
-#include "SHDN.h"
 #include "Event.h"
 #include "CS1.h"
 #include "TU2.h"
@@ -184,12 +183,12 @@ void SENSOR_Init() {
 	pix_index = 0;
 	LEDred_SetVal();
 	EN_SetVal();
-	SHDN_SetVal();
 	integrationTime_us = START_INTEGRATION_TIME;
 	FRTOS1_vSemaphoreCreateBinary(sem_dataAvailable);
 		if (sem_dataAvailable == NULL) {
 			for (;;) {}
 		}
+	//FRTOS1_xSemaphoreTake(sem_dataAvailable,0/portTICK_RATE_MS);
 	FRTOS1_vSemaphoreCreateBinary(sem_EOS);
 		if (sem_EOS == NULL) {
 			for (;;) {}
@@ -198,6 +197,7 @@ void SENSOR_Init() {
 			for (;;) {
 			}
 		}
+	//FRTOS1_xSemaphoreTake(EOS_handler,0/portTICK_RATE_MS);
 #if !PL_HAS_SENSOR
 	SENSOR_loadDummyData();
 #endif
