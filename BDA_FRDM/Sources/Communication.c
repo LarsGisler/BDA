@@ -58,7 +58,7 @@ void COM_extractCommandInfo(){
 			case SEND_DATA_COMMAND:
 				//EVNT_SetEvent(EVNT_DATA_REQUEST);
 				if(actualState == Waiting){
-				actualState = Measuring;
+				//actualState = Measuring;
 				xSemaphoreGive(sem_dataCommand);
 				}
 #if !PL_HAS_SENSOR
@@ -96,8 +96,8 @@ void COM_sendCalibrationACK(){
 }
 
 void COM_sendPixel(uint8_t pix_index){
-	uint8_t byteL = sensor_data[pix_index];
-	uint8_t byteH = sensor_data[pix_index]>>8;
+	uint8_t byteL = sensor_data_ready[pix_index];
+	uint8_t byteH = sensor_data_ready[pix_index]>>8;
 	CDC1_SendChar((char)byteL);
 	CDC1_SendChar((char)byteH);
 	CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer));

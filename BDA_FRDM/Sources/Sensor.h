@@ -28,6 +28,7 @@ extern xSemaphoreHandle sem_EOS;
 
 uint16_t sensor_data_raw[NUMBER_OF_PIXEL];
 uint16_t sensor_data[NUMBER_OF_PIXEL];
+uint16_t sensor_data_ready[NUMBER_OF_PIXEL];
 uint16_t sensor_calibration_data[NUMBER_OF_PIXEL];
 uint8_t pix_index;
 int8_t clk_cntr;

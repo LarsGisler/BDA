@@ -16,6 +16,8 @@
 #include "Event.h"
 #include "CS1.h"
 #include "TU2.h"
+#include "Led.h"
+#include "Trigger.h"
 #if !PL_HAS_SENSOR
 #include "EventHandler.h"
 #endif
@@ -44,7 +46,7 @@ static portTASK_FUNCTION(EOS_handler, pvParameters) {
 			 if(actualState == Calibrating){
 			 		SENSOR_handleCalibrationData();
 			 	}
-			 else{
+			 if(actualState == Waiting){
 			 		SENSOR_handleNewData();
 			 }
 		 }
@@ -156,25 +158,33 @@ void measurePixel() {
 
 void SENSOR_handleNewData() {
 	uint8_t correction_factor = integrationTime_adaption;
-	FRTOS1_taskENTER_CRITICAL();
+	//FRTOS1_taskENTER_CRITICAL();
+	CS1_CriticalVariable();
+	CS1_EnterCritical();
 	for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
 		int pixel_data = (sensor_data_raw[pix_index] - sensor_calibration_data[pix_index]);
 		if((pixel_data < 0) || (pixel_data > 60000)){
-			 sensor_data_raw[pix_index] = 0;
+			 sensor_data[pix_index] = 0;
 		}
 		else{
 			sensor_data[pix_index] = pixel_data;
 		}
 	}
-	FRTOS1_taskEXIT_CRITICAL();
-	if ((!adaptIntegrationTime()) && (actualState == Measuring)) {
+	if ((!adaptIntegrationTime())) { // && (actualState == Measuring)
 		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
-			sensor_data[pix_index] = sensor_data[pix_index]/correction_factor;
+			sensor_data_ready[pix_index] = sensor_data[pix_index]/correction_factor;
 		}
 		//EVNT_SetEvent(EVNT_NEW_DATA);
 		xSemaphoreGive(sem_dataAvailable);
 		actualState = Waiting;
 	}
+	CS1_ExitCritical();
+	//FRTOS1_taskEXIT_CRITICAL();
+
+
+	LED2_On();
+	TRG_SetTrigger(TRG_LED2_OFF,100/TRG_TICKS_MS,LED2m_Off,NULL);
+
 }
 
 void SENSOR_Init() {
@@ -188,11 +198,12 @@ void SENSOR_Init() {
 		if (sem_dataAvailable == NULL) {
 			for (;;) {}
 		}
-	//FRTOS1_xSemaphoreTake(sem_dataAvailable,0/portTICK_RATE_MS);
+	FRTOS1_xSemaphoreTake(sem_dataAvailable,10/portTICK_RATE_MS);
 	FRTOS1_vSemaphoreCreateBinary(sem_EOS);
 		if (sem_EOS == NULL) {
 			for (;;) {}
 		}
+	FRTOS1_xSemaphoreTake(sem_EOS,10/portTICK_RATE_MS);
 	if (FRTOS1_xTaskCreate(EOS_handler, "eos handler", configMINIMAL_STACK_SIZE, NULL, 2, NULL) != pdPASS) {
 			for (;;) {
 			}
