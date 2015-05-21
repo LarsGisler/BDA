@@ -35,7 +35,7 @@ State actualState = Starting;
 
 void SENSOR_loadDummyData() {
 	for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
-		sensor_data[pix_index] = pix_index * 100;
+		sensor_data_ready[pix_index] = pix_index * 100;
 	}
 }
 

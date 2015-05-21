@@ -33,11 +33,11 @@ static portTASK_FUNCTION(communication, pvParameters) {
 				  COM_sendCalibrationACK();
 			  }
 		 if(FRTOS1_xSemaphoreTake(sem_dataCommand,0/portTICK_RATE_MS)==pdTRUE) {
-			 if(FRTOS1_xSemaphoreTake(sem_dataAvailable,0)==pdTRUE) {
+			 if(FRTOS1_xSemaphoreTake(sem_dataAvailable,portMAX_DELAY)==pdTRUE) {
 					  COM_sendSensorData();
 				  }
 			  }
-		 FRTOS1_vTaskDelay(20 / portTICK_RATE_MS);
+		 FRTOS1_vTaskDelay(10 / portTICK_RATE_MS);
 	}
 }
 
@@ -60,10 +60,11 @@ void COM_extractCommandInfo(){
 				if(actualState == Waiting){
 				//actualState = Measuring;
 				xSemaphoreGive(sem_dataCommand);
-				}
 #if !PL_HAS_SENSOR
-				EVNT_SetEvent(EVNT_NEW_DATA);
+				xSemaphoreGive(sem_dataAvailable);
 #endif
+				}
+
 				break;
 			case CALIBRATION_COMMAND:
 				//EVNT_SetEvent(EVNT_CALIBRATION);
@@ -73,7 +74,7 @@ void COM_extractCommandInfo(){
 				integrationTime_us = START_INTEGRATION_TIME;
 				actualState = Calibrating;
 #if !PL_HAS_SENSOR
-				EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
+				xSemaphoreGive(sem_calibration);
 #endif
 				break;
 			default: break;

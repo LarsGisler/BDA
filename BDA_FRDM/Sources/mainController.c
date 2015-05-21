@@ -33,13 +33,13 @@ extern uint8_t cdc_buffer[USB1_DATA_BUFF_SIZE];
 static portTASK_FUNCTION(Main, pvParameters) {
 
 	for (;;) {
-		EventHandler_HandleEvent();
 		while (CDC1_App_Task(cdc_buffer, sizeof(cdc_buffer)) == ERR_BUSOFF) {
-					//WAIT1_Waitms(10);
-		}
+									//WAIT1_Waitms(10);
+				}
 		COM_readCommand();
 		COM_extractCommandInfo();
-		FRTOS1_vTaskDelay(20 / portTICK_RATE_MS);
+		EventHandler_HandleEvent();
+		FRTOS1_vTaskDelay(10 / portTICK_RATE_MS);
 	}
 }
 	/*
