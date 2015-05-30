@@ -1,9 +1,10 @@
-/*
- * Timer.c
+/**
+ * \file
+ * \brief Timer driver implementation
+ * \author Cyrill Wyss and Lars Gisler
  *
- *  Created on: 10.03.2015
- *      Author: Cyrill
  */
+
 #include "Timer.h"
 
 #if PL_HAS_HAS_TIMER
@@ -32,12 +33,10 @@ void TMR_OnInterrupt(void){
 
 
 void TMR_Init(void){
-
 }
 
 
 void TMR_Deinit(void){
-
 }
 
 

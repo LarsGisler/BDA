@@ -1,8 +1,8 @@
-/*
- * EventHandler.h
+/**
+ * \file
+ * \brief provides functions which after certain events occured
+ * \author Cyrill Wyss and Lars Gisler
  *
- *  Created on: 10.03.2015
- *      Author: Cyrill
  */
 
 
@@ -13,7 +13,6 @@
 #include "Event.h"
 /**
  * \brief Handles a pending event
- * \param[in] EVNT_Handle the event type to handle
  */
 void EventHandler_HandleEvent(void);
 

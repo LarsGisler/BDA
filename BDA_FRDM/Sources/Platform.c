@@ -6,12 +6,10 @@
  */
 
 #include "Platform.h"
-#include "LED.h"
+#include "Led.h"
 #include "Event.h"
 #include "Trigger.h"
 #include "RTOS.h"
-#include "Shell.h"
-#include "ShellQueue.h"
 #include "Sensor.h"
 #include "Communication.h"
 
@@ -32,18 +30,16 @@ void PL_Init(void) {
 	EVNT_Init();
 #endif
 
-#if PL_HAS_KEYS
-	KEY_Init();
-#endif
-
 #if PL_HAS_RTOS
 	 RTOS_Init();
 #endif
-#if PL_HAS_SHELL_QUEUE
-	 SQUEUE_Init();
+
+#if PL_HAS_TIMER
+	 TMR_Init();
 #endif
-#if	PL_HAS_SHELL
-	 SHELL_Init();
+
+#if PL_HAS_TRIGGER
+	 TRG_Init();
 #endif
 }
 
@@ -65,21 +61,16 @@ void PL_Deinit(void) {
 	EVNT_Deinit();
 #endif
 
+#if PL_HAS_TIMER
+	TMR_Deinit();
+#endif
+
 #if PL_HAS_TRIGGER
 	TRG_Deinit();
 #endif
 
-#if PL_HAS_BUZZER
-	BUZ_Deinit();
+#if PL_HAS_RTOS
+	RTOS_Deinit();
 #endif
 
-#if PL_HAS_RTOS
-	 RTOS_Deinit();
-#endif
-#if	PL_HAS_SHELL
-	 SHELL_Deinit();
-#endif
-#if PL_HAS_SHELL_QUEUE
-	 SQUEUE_Deinit();
-#endif
 }

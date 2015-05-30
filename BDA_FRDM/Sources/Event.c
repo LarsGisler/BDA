@@ -2,6 +2,7 @@
  * \file
  * \brief Event driver implementation.
  * \author Erich Styger, erich.styger@hslu.ch
+ * modified by Lars Gisler
  *
  * This module implements a generic event driver. We are using numbered events starting with zero.
  * EVNT_HandleEvent() can be used to process the pending events. Note that the event with the number zero

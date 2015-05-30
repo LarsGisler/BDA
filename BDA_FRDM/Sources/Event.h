@@ -2,6 +2,7 @@
  * \file
  * \brief Event driver interface.
  * \author Erich Styger, erich.styger@hslu.ch
+ * modified by Lars Gisler
  *
  * This module implements a generic event driver. We are using numbered events starting with zero.
  * EVNT_HandleEvent() can be used to process the pending events. Note that the event with the number zero
@@ -17,7 +18,6 @@
 
 typedef enum EVNT_Handle {
   EVNT_INIT,            /*!< System Initialization Event */
-  //EVNT_LED_HEARTBEAT,
   EVNT_SW1_PRESSED,
   /*!< \todo Your events here */
   EVNT_NOF_EVENTS       /*!< Must be last one! */

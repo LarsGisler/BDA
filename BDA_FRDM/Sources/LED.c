@@ -1,8 +1,9 @@
-/*
- * LED.c
+/**
+ * \file
+ * \brief LED driver implementation
+ * \author Erich Styger, erich.styger@hslu.ch
  *
- *  Created on: 02.03.2015
- *      Author: tastyger
+ * modified by Lars Gisler
  */
 
 #include "LED.h"

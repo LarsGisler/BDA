@@ -1,8 +1,11 @@
-/*
- * Sensor.c
+/**
+ * \file
+ * \brief Sensor Driver
+ * \author Lars Gisler
  *
- *  Created on: 03.05.2015
- *      Author: Lars Gisler
+ * This module provides all functions to communicate with the Hamamatsu Sensor and to read and store the sensor data.
+ * It ensures the synchronization between the A/D conversion and the sensor video signal. The modul furthermore provides
+ * an algorithm to dynamically adapt the integration time.
  */
 
 #include "Platform.h"
@@ -26,10 +29,20 @@
 xSemaphoreHandle sem_dataAvailable = NULL;
 xSemaphoreHandle sem_EOS = NULL;
 
-byte readingData_flag = 0;
+uint16_t sensor_data_raw[NUMBER_OF_PIXEL];
+uint16_t sensor_data[NUMBER_OF_PIXEL];
+uint16_t sensor_data_ready[NUMBER_OF_PIXEL];
+uint16_t sensor_calibration_data[NUMBER_OF_PIXEL];
+uint8_t pixel_index;
+
 int integrationTime_us = START_INTEGRATION_TIME;
 int integrationTime_cntr = 0;
+/*! flag indicates whether the integration time is elapsed and the sensor data needs to be read */
+byte readingData_flag = 0;
+/*! Is used to adapt the sensor data in dependence on the integration time*/
 uint8_t integrationTime_adaption = 1;
+/* counter is used to synchronize the sensor video signal with the AD conversion*/
+int8_t clk_cntr;
 
 State actualState = Starting;
 
@@ -39,83 +52,70 @@ void SENSOR_loadDummyData() {
 	}
 }
 
-static portTASK_FUNCTION(EOS_handler, pvParameters) {
+static portTASK_FUNCTION(EOS_Handler, pvParameters) {
 	for (;;) {
 		 if(xSemaphoreTake(sem_EOS,0/portTICK_RATE_MS)==pdTRUE) {
 			 readingData_flag = 0;
+			 /* action depends on program state */
 			 if(actualState == Calibrating){
 			 		SENSOR_handleCalibrationData();
 			 	}
-			 if(actualState == Waiting){
+			 if(actualState == Measuring){
 			 		SENSOR_handleNewData();
 			 }
 		 }
-		 //FRTOS1_vTaskDelay(10 / portTICK_RATE_MS);
 	}
 }
 
 
 void SENSOR_CLK_interrupt() {
 	if (actualState != Starting) {
-		if (integrationTime_cntr >= (integrationTime_us / CLK_TICK_US)) {
+		if (integrationTime_cntr >= (integrationTime_us / CLK_TICK_US)) { /* if integration time is elapsed do...*/
 			readingData_flag = 1;
 			integrationTime_cntr = 0;
-			pix_index = 0;
-			clk_cntr = 3;
-			ST_ClrVal();
+			pixel_index = 0;
+			clk_cntr = 3; /* necessary to define the time between the start signal and the first AD conversion*/
+			ST_ClrVal(); /* give start signal to the sensor*/
 		} else {
 			integrationTime_cntr++;
 		}
 		if (readingData_flag) {
 			if (clk_cntr == TICKS_FOR_VIDEO) {
-				measurePixel(pix_index);
+				measurePixel(pixel_index); /* read pixel value from sensor video signal */
 				clk_cntr = 1;
 			}
 			else {
 				clk_cntr++;
 			}
-			if (clk_cntr == 6) {
+			if (clk_cntr == 6) { /* put start signal back to high level after a certain number of clk edges*/
 				ST_SetVal();
 			}
 		}
 	}
 }
 
-/*uint8_t SENSOR_measureIntegrationTime() {
-	static int integrationTime_cntr = 0;
-	if (integrationTime_cntr != (integrationTime_us / CLK_TICK_US)) {
-		integrationTime_cntr++;
-		return 0;
-	} else {
-		return 1;
-	}
-}*/
-
-void SENSOR_Start() {
-	//(void)TU2_Enable(NULL);
-	actualState = Waiting;
-}
 
 void SENSOR_handleCalibrationData() {
 	static uint8_t calibration_cntr = 0;
-	if(calibration_cntr != 0){
-		FRTOS1_taskENTER_CRITICAL();
-		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
+	if(calibration_cntr != 0){ /* ignore the first measure process because most pixels are saturated */
+		CS1_CriticalVariable();
+		CS1_EnterCritical();
+		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) { /* sum up three complete measure processes */
 			sensor_calibration_data[pix_index] += sensor_data_raw[pix_index];
 			sensor_data_raw[pix_index] = 0;
 		}
-		FRTOS1_taskEXIT_CRITICAL();
+		CS1_ExitCritical();
 	}
 	if(calibration_cntr == 3){
-		FRTOS1_taskENTER_CRITICAL();
-		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
+		CS1_CriticalVariable();
+		CS1_EnterCritical();
+		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) { /* calculate average of three measure processes */
 				sensor_calibration_data[pix_index] = sensor_calibration_data[pix_index]/3;
 		}
-		FRTOS1_taskEXIT_CRITICAL();
+		CS1_ExitCritical();
 		integrationTime_us = START_INTEGRATION_TIME;
-		//EVNT_SetEvent(EVNT_CALIBRATION_FINISHED);
-		xSemaphoreGive(sem_calibration);
-		actualState = Waiting;
+		xSemaphoreGive(sem_calibration); /* release semaphore to indicate the calibration process has been finished */
+		actualState = Measuring;
 		calibration_cntr = 0;
 	}
 	else{
@@ -129,138 +129,97 @@ void measurePixel() {
 	(void) AD1_Measure(FALSE);
 }
 
-/*void SENSOR_readSensor() {
-	static uint8_t cntr = 0;
-	static uint8_t pix_index = 0;
-
-	if (cntr == TICKS_FOR_VIDEO) {
-		measurePixel(pix_index);
-		cntr = 0;
-		if (pix_index == (NUMBER_OF_PIXEL - 1)) {
-			pix_index = 0;
-		} else {
-			pix_index++;
-		}
-	} else {
-		cntr++;
-	}
-	if (cntr == 3) {
-		ST_SetVal();
-	}
-}*/
-
-/*void SENSOR_startMeasurement() {
-	ST_ClrVal();
-	readingData_flag = 1;
-	integrationTime_us = START_INTEGRATION_TIME;
-}*/
-
 
 void SENSOR_handleNewData() {
 	uint8_t correction_factor = integrationTime_adaption;
-	//FRTOS1_taskENTER_CRITICAL();
 	CS1_CriticalVariable();
 	CS1_EnterCritical();
-	for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
+	for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) { /* deduct the calibration data from the sensor data*/
 		int pixel_data = (sensor_data_raw[pix_index] - sensor_calibration_data[pix_index]);
-		if((pixel_data < 0) || (pixel_data > 60000)){
+		if((pixel_data < 0) || (pixel_data > 60000)){ /* handle overflow, just in case calibration value is higher than the sensor value */
 			 sensor_data[pix_index] = 0;
 		}
 		else{
 			sensor_data[pix_index] = pixel_data;
 		}
 	}
-	if ((!adaptIntegrationTime())) { // && (actualState == Measuring)
+	if ((!adaptIntegrationTime())) { /* enter only if the integration time stays the same */
 		for (int pix_index = 0; pix_index < NUMBER_OF_PIXEL; pix_index++) {
-			sensor_data_ready[pix_index] = sensor_data[pix_index]/correction_factor;
-		}
-		//EVNT_SetEvent(EVNT_NEW_DATA);
-		xSemaphoreGive(sem_dataAvailable);
-		actualState = Waiting;
+			sensor_data_ready[pix_index] = sensor_data[pix_index]/correction_factor; /* prepare data to send it over usb */
+		} /* correction factor depends on integration time */
+		xSemaphoreGive(sem_dataAvailable); /* release semaphore when new data is ready to be sent over USB*/
 	}
 	CS1_ExitCritical();
-	//FRTOS1_taskEXIT_CRITICAL();
-
-
-	LED2_On();
-	TRG_SetTrigger(TRG_LED2_OFF,100/TRG_TICKS_MS,LED2m_Off,NULL);
-
 }
 
 void SENSOR_Init() {
 	readingData_flag = 0;
 	integrationTime_adaption = 1;
-	pix_index = 0;
+	pixel_index = 0;
 	LEDred_SetVal();
 	EN_SetVal();
 	integrationTime_us = START_INTEGRATION_TIME;
 	FRTOS1_vSemaphoreCreateBinary(sem_dataAvailable);
 		if (sem_dataAvailable == NULL) {
-			for (;;) {}
+			for (;;) {} /* error */
 		}
-	FRTOS1_xSemaphoreTake(sem_dataAvailable,10/portTICK_RATE_MS);
+	FRTOS1_xSemaphoreTake(sem_dataAvailable,10/portTICK_RATE_MS); /* take semaphore to set it to zero*/
 	FRTOS1_vSemaphoreCreateBinary(sem_EOS);
 		if (sem_EOS == NULL) {
-			for (;;) {}
+			for (;;) {} /* error */
 		}
-	FRTOS1_xSemaphoreTake(sem_EOS,10/portTICK_RATE_MS);
-	if (FRTOS1_xTaskCreate(EOS_handler, "eos handler", configMINIMAL_STACK_SIZE, NULL, 2, NULL) != pdPASS) {
-			for (;;) {
-			}
+	FRTOS1_xSemaphoreTake(sem_EOS,10/portTICK_RATE_MS); /* take semaphore to set it to zero*/
+	if (FRTOS1_xTaskCreate(EOS_Handler, "eos Handler", configMINIMAL_STACK_SIZE, NULL, 2, NULL) != pdPASS) {
+			for (;;) {} /* error */
 		}
-	//FRTOS1_xSemaphoreTake(EOS_handler,0/portTICK_RATE_MS);
 #if !PL_HAS_SENSOR
-	SENSOR_loadDummyData();
+	SENSOR_loadDummyData(); /* load dummy data when sensor is inactive in Platform.h */
 #endif
 	actualState = Starting;
 }
 
 void SENSOR_Deinit() {
-
 }
 
 
 byte adaptIntegrationTime() {
-	uint8_t adapt_flag = 0;
-	int static peak_timeout = 10;
+	uint8_t adapt_flag = 0; /* holds decision whether integration time changed or not */
+	int static peak_timeout = 10;  /* peak timeout to avoid fast changing/toggling of between two integration times*/
 	int static peak_detected = 0;
 	int pixel_avg = getPixelAvg();
 	int nbrOfPeaks =  getNbrOfPeaks();
 
-	if((nbrOfPeaks >= 2) && (pixel_avg < (0.4*MAX_PIX_VALUE_CALIBRATED))){
+	if((nbrOfPeaks >= 2) && (pixel_avg < (0.4*MAX_PIX_VALUE_CALIBRATED))){ /* peak detected */
 		peak_detected = 1;
 		peak_timeout = 40;
-		if(integrationTime_us >= 800000){
+		if(integrationTime_us >= 800000){ /* different timeout for longer integration time*/
 			peak_timeout = 6;
 		}
 	}
-	if(peak_detected && (peak_timeout != 0)){
+	if(peak_detected && (peak_timeout != 0)){ /* count down peak timeout*/
 			peak_timeout--;
 	}
-	if((pixel_avg < 0.05*MAX_PIX_VALUE_CALIBRATED) || (peak_timeout == 0)){
+	if((pixel_avg < 0.05*MAX_PIX_VALUE_CALIBRATED) || (peak_timeout == 0)){ /* leave peakDetected Mode when average value is lower than 5% or time out is elapsed */
 		peak_detected = 0;
 	}
-
-	if((pixel_avg >= 0.4*MAX_PIX_VALUE_CALIBRATED) || (nbrOfPeaks >= 2)){
-		if(integrationTime_adaption != 1){
+	if((pixel_avg >= 0.4*MAX_PIX_VALUE_CALIBRATED) || (nbrOfPeaks >= 2)){ /* reduce integration time */
+		if(integrationTime_adaption != 1){ /* prevent integration time comes below the minimum*/
 			integrationTime_us = integrationTime_us/2;
 			integrationTime_adaption = integrationTime_adaption/2;
 			adapt_flag = 1;
 		}
 	}
-	if((pixel_avg < 0.2*MAX_PIX_VALUE_CALIBRATED) && (!peak_detected)){
+	if((pixel_avg < 0.2*MAX_PIX_VALUE_CALIBRATED) && (!peak_detected)){ /* increase integration time */
 		integrationTime_us = integrationTime_us*2;
 		integrationTime_adaption = integrationTime_adaption*2;
 		adapt_flag = 1;
 	}
-	// if the integrationTime exceeds 4480ms
-	if(integrationTime_adaption >= 128){
+	if(integrationTime_adaption >= 128){ /* if the integrationTime exceeds 6400ms*/
 		integrationTime_us = 128*START_INTEGRATION_TIME;
 		integrationTime_adaption = 128;
 		adapt_flag = 0;
 	}
-	// if the integrationTime is smaller than 50ms
-	if(integrationTime_adaption <= 1){
+	if(integrationTime_adaption <= 1){ /* if the integrationTime is smaller than 50ms*/
 		integrationTime_us = START_INTEGRATION_TIME;
 		integrationTime_adaption = 1;
 		adapt_flag = 0;
@@ -283,19 +242,11 @@ int getPixelAvg() {
 
 int getNbrOfPeaks() {
 	int peak_cntr = 0;
-	//int peak_sum = 0;
-	//int pix_avg = getPixelAvg();
 	for(int pix_index=0; pix_index < NUMBER_OF_PIXEL; pix_index++){
 			if(sensor_data[pix_index] >= MAX_PIX_VALUE_CALIBRATED){
 				peak_cntr++;
-				//peak_sum = peak_sum + sensor_data[pix_index];
 			}
 	}
-	//if((peak_cntr > 5) && (peak_cntr < 50)){
-		return peak_cntr; // there is a peak in the spectrum, return average value of peak pixels
-	//}
-	//else{
-	//	return 0; // there is no peak in the spectrum, even distribution of pixels
-	//}
+	return peak_cntr;
 }
 

@@ -41,7 +41,6 @@
 extern "C" {
 #endif 
 
-extern xSemaphoreHandle sem_EOS;
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -151,8 +150,8 @@ void FRTOS1_vApplicationMallocFailedHook(void)
 void AD1_OnEnd(void)
 {
   /* Write your code here ... */
-	(void) AD1_GetValue16(&sensor_data_raw[pix_index]);
-	pix_index++;
+	(void) AD1_GetValue16(&sensor_data_raw[pixel_index]);
+	pixel_index++;
 	TestPin_ClrVal();
 }
 
@@ -190,7 +189,6 @@ void AD1_OnCalibrationEnd(void)
 void EOS_OnInterrupt(void)
 {
   /* Write your code here ... */
-	//SENSOR_EOS_interrupt();
 	xSemaphoreGiveFromISR(sem_EOS, NULL);
 }
 

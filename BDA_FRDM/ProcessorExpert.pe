@@ -3,8 +3,8 @@
   <Header>
     <Name>BDA_FRDM</Name>
     <SavedBy>Lars</SavedBy>
-    <ModificationStamp>112</ModificationStamp>
-    <Date>2015-05-21</Date>
+    <ModificationStamp>115</ModificationStamp>
+    <Date>2015-05-30</Date>
     <IDE>Eclipse IDE</IDE>
     <PEversion>1.10.1.RT6_b1444-1070</PEversion>
   </Header>
@@ -29,7 +29,7 @@
     <UseExistingModules>true</UseExistingModules>
     <RenamePeripheries>false</RenamePeripheries>
     <Autodependency>true</Autodependency>
-    <ProjectCompNumb>161</ProjectCompNumb>
+    <ProjectCompNumb>164</ProjectCompNumb>
     <DelUnusedPreviouslyGenFiles>true</DelUnusedPreviouslyGenFiles>
     <GeneratedCodeFrozen>false</GeneratedCodeFrozen>
     <AssignInitComponentNameToPrph>true</AssignInitComponentNameToPrph>
