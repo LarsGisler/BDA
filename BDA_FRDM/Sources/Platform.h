@@ -1,8 +1,8 @@
-/*
- * Platform.h
+/**
+ * \file
+ * \brief provides pre-configuration of the program
+ * \author Lars Gisler
  *
- *  Created on: 02.03.2015
- *      Author: tastyger
  */
 
 #ifndef PLATFORM_H_
@@ -21,7 +21,7 @@
 #define PL_HAS_RTOS			(1)
 #define PL_HAS_USB_CDC		(1)
 #define PL_NOF_LEDS       	(3)
-#define PL_HAS_SENSOR		(1)
+#define PL_HAS_SENSOR		(1) /* set to 0 to load dummy data */
 #define PL_HAS_COM			(1)
 #define PL_HAS_SERVICE_PROTOCOL	(1)
 #define PL_HAS_REPEAT_PROTOCOL	(0)

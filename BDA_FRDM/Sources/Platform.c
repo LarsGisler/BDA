@@ -1,8 +1,8 @@
-/*
- * Platform.c
+/**
+ * \file
+ * \brief provides pre-configuration of the program
+ * \author Lars Gisler
  *
- *  Created on: 02.03.2015
- *      Author: tastyger
  */
 
 #include "Platform.h"

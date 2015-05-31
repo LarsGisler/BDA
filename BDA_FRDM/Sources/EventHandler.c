@@ -1,6 +1,6 @@
 /**
  * \file
- * \brief provides functions which after certain events occurred
+ * \brief provides functions which are executed after certain events occurred
  * \author Cyrill Wyss and Lars Gisler
  *
  */
